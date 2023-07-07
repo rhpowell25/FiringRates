@@ -1,4 +1,4 @@
-function [Alignment_Times] = EMGMaxAlignmentTimes(xds, target_dir, target_center)
+function [Alignment_Times] = EMGOnsetAlignmentTimes(xds, target_dir, target_center)
 
 %% Catch possible sources of error
 
@@ -8,6 +8,12 @@ if ~isfield(xds, 'EMG')
     Alignment_Times = NaN;
     return
 end
+
+%% Basic settings, some variable extractions, & definitions
+
+% Window to calculate max firing rate
+half_window_size = 1; % Bins
+step_size = 1; % Bins
 
 %% Times for rewarded trials
 
@@ -41,19 +47,29 @@ for ii = 1:length(EMG)
     end
 end
 
-%% Defines onset time via the maximum EMG
-EMG_max_idx = zeros(length(rewarded_gocue_time),1);
+%% Defines onset time via the EMG onset
 
+EMG_onset_idx = zeros(length(rewarded_gocue_time),1);
 % Loops through EMG
 for ii = 1:length(rewarded_gocue_time)
-    EMG_max_idx(ii) = find(summed_EMG{ii,1} == max(summed_EMG{ii,1})); 
+    [sliding_avg, ~, ~] = Sliding_Window(summed_EMG{ii,1}, half_window_size, step_size);
+    % Find the peak EMG
+    temp_1 = find(sliding_avg == max(sliding_avg));
+    % Find the onset of this peak
+    try
+        temp_2 = find(summed_EMG{ii,1}(1:temp_1) < prctile(summed_EMG{ii,1}, 15));
+        EMG_onset_idx(ii,1) = temp_2(end);
+    catch
+        temp_2 = find(summed_EMG{ii,1}(1:temp_1) == min(summed_EMG{ii,1}(1:temp_1)));
+        EMG_onset_idx(ii,1) = temp_2;
+    end
 end
     
 %% Convert the onset_time_idx array into actual timings in seconds
 
 Alignment_Times = zeros(length(timings),1);
 for ii = 1:length(timings)
-    Alignment_Times(ii) = timings{ii, 1}(EMG_max_idx(ii));
+    Alignment_Times(ii) = timings{ii, 1}(EMG_onset_idx(ii));
 end
 
 

@@ -13,51 +13,53 @@ elseif strcmp(xds.meta.task, 'multi_gadget')
     events(4) = 'window_force_deriv';
     events(5) = 'window_force_max';
 end
+events(6) = 'window_EMG_onset';
+events(7) = 'window_EMG_max';
 
-event_depth_mod = zeros(length(events), 1);
+event_distribution = zeros(length(events), 1);
 
 % Which targets do you want the mnovement phase firing rate calculated from? ('Max', 'Min', 'All')
 tgt_mpfr = 'Max';
 
-%% Get the baseline firing rates
-[~, ~, bs_fr, ~, ~, ~] = ... 
-    BaselineFiringRate(xds, unit_name);
+% Extract the target directions & centers
+[target_dirs, target_centers] = Identify_Targets(xds);
 
 %% Run the function for each event
 
 for ii = 1:length(events)
 
-    % Get the movement phase firing rates
-    [target_dirs, target_centers, mp_fr, ~, ~, ~] = ...
-        EventFiringRate(xds, unit_name, events(ii), tgt_mpfr);
-
-    % Calculate the depth of modulation per trial
-    perdir_depth = zeros(length(mp_fr), 1);
-    for jj = 1:length(mp_fr)
-        perdir_depth(jj,1) = mp_fr(jj) - bs_fr;
-    end
-
     % Only look at the preferred direction
     [pref_dir] = EventPreferredDirection(xds, unit_name, events(ii), tgt_mpfr);
 
-    pref_dir_max_tgt = max(target_centers(target_dirs == pref_dir));
-    pref_dir_min_tgt = min(target_centers(target_dirs == pref_dir));
-        
-    % Look at the maximum or minimum targets if not using all targets
     if strcmp(tgt_mpfr, 'Max')
-        event_depth_mod(ii) = perdir_depth(target_centers == pref_dir_max_tgt);
+        pref_dir_tgt = max(target_centers(target_dirs == pref_dir));
+    elseif strcmp(tgt_mpfr, 'Min')
+        pref_dir_tgt = min(target_centers(target_dirs == pref_dir));
     end
 
-    if strcmp(tgt_mpfr, 'Min')
-        event_depth_mod(ii) = perdir_depth(target_centers == pref_dir_min_tgt);
+    [rewarded_gocue_time] = EventAlignmentTimes(xds, pref_dir, pref_dir_tgt, 'trial_gocue');
+    [rewarded_end_time] = EventAlignmentTimes(xds, pref_dir, pref_dir_tgt, 'trial_end');
+    [Alignment_Times] = EventAlignmentTimes(xds, pref_dir, pref_dir_tgt, events(ii));
+
+    % Find the trial lengths
+    gocue_to_event = Alignment_Times - rewarded_gocue_time;
+    event_to_end = rewarded_end_time - Alignment_Times;
+        
+    % Look at the maximum or minimum targets if not using all targets
+    if ~strcmp(events(ii), 'window_trial_end')
+        event_distribution(ii) = std(event_to_end);
+    else
+        event_distribution(ii) = std(gocue_to_event);
     end
 
 end
 
 %% Find the optimal alignment
-optimal_alignment = events(event_depth_mod == max(event_depth_mod));
+optimal_alignment = events(event_distribution == min(event_distribution));
 
-fprintf('The Optimal Alignment is %s\n', char(optimal_alignment));
+for ii = 1:length(optimal_alignment)
+    fprintf('The Optimal Alignment is %s\n', char(optimal_alignment(ii)));
+end
 
 
 

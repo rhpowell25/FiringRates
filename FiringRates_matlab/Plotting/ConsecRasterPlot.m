@@ -4,55 +4,16 @@ function ConsecRasterPlot(xds, unit_name, target_dirs, trial_num, heat_map)
 clc
 disp('Consecutive Raster Plot Function:');
 
-%% Find the meta info to load the output excel table
-
-if ~ischar(unit_name) || strcmp(unit_name, 'All')
-    % Date
-    file_name = xds.meta.rawFileName;
-    xtra_info = extractAfter(file_name, '_');
-    trial_date = erase(file_name, strcat('_', xtra_info));
-
-    % Task
-    if strcmp(xds.meta.task, 'multi_gadget')
-        trial_task = 'PG';
-    else
-        trial_task = 'WS';
-    end
-
-    % Monkey
-    monkey_name = xds.meta.monkey;
-
-    % File Path
-    file_path = strcat('C:\Users\rhpow\Documents\Grad School\', monkey_name, '\', trial_date, '\');
-    % Files & folders
-    dir_path = dir(file_path);
-    % Table of only files
-    files_in_path = struct2table(dir_path(~([dir_path.isdir])));
-
-    % Selected file
-    selec_file = contains(files_in_path.name, trial_task);
-
-    output_xds = readtable(strcat(file_path, files_in_path.name{selec_file,1}));
-
-
-    %% Find the units of interest
-
-    if ~strcmp(unit_name, 'All')
-        unit_names = output_xds.unit_names(1:unit_name);
-    else
-        unit_names = output_xds.unit_names;
-    end
-
-    %% Identify the index of all the units  
-    N = zeros(length(unit_names),1);
-    for ii = 1:length(unit_names)
-        N(ii) = find(strcmp(xds.unit_names, unit_names(ii)));
-    end
-else
-    N = find(strcmp(xds.unit_names, unit_name));
-end
+%% Find the unit of interest
+[N] = Find_Unit(xds, unit_name);
 
 %% Some variable extraction & definitions
+
+% Pull the binning paramaters
+[Bin_Params] = Binning_Parameters;
+
+% Binning information
+bin_size = Bin_Params.bin_size; % Time (sec.)
 
 % Font specifications
 label_font_size = 17;
@@ -196,8 +157,8 @@ end
 %% If Heat Map is selected
 if isequal(heat_map, 1)
     %% Binning & averaging the spikes
+    
     % Set the number of bins based on the length of each trial
-    bin_size = 0.05;
     n_bins = round((rewarded_end_time - rewarded_start_time) / bin_size);
     hist_spikes = struct([]);
     for ss = 1:length(relative_trial_spikes)

@@ -1,24 +1,8 @@
 function [mp_fr, std_mp, pertrial_mpfr] = ...
     EventPeakFiringRate(xds, unit_name, event)
 
-%% Load the excel file
-if ~ischar(unit_name)
-
-    [xds_output] = Find_Excel(xds);
-
-    %% Find the unit of interest
-    
-    try
-        unit = xds_output.unit_names(unit_name);
-        % Identify the index of the unit
-        N = find(strcmp(xds.unit_names, unit));
-    catch
-        N = [];
-    end
-
-else
-    N = find(strcmp(xds.unit_names, unit_name));
-end
+%% Find the unit of interest
+[N] = Find_Unit(xds, unit_name);
 
 %% End the function with NaN output variables if the unit doesnt exist
 if isempty(N)
@@ -34,11 +18,11 @@ end
 % Extract all the spikes of the unit
 spikes = xds.spikes{1, N};
 
-% Window to calculate max firing rate
-window_size = 0.1;
-
 % Extract the target directions & centers
 [target_dirs, target_centers] = Identify_Targets(xds);
+
+% Pull the binning paramaters
+[Bin_Params] = Binning_Parameters;
 
 %% Indexes for rewarded trials in all directions
 % Counts the number of directions used
@@ -52,9 +36,12 @@ for jj = 1:num_dir
 
     %% Time period for peak firing rate
     if contains(event, 'window')
-        [~, max_fr_time, ~] = EventWindow(xds, unit_name, target_dirs(jj), target_centers(jj), event);
+        [~, max_fr_time] = EventWindow(xds, unit_name, target_dirs(jj), target_centers(jj), event);
+        % Window to calculate max firing rate
+        half_window_length = Bin_Params.half_window_length; % Time (sec.)
     else
-        max_fr_time = 0;
+        max_fr_time = 0; % Time (sec.)
+        half_window_length = 0.1; % Time (sec.)
     end
 
     %% Define the output variables
@@ -66,10 +53,10 @@ for jj = 1:num_dir
 
     %% Peak firing rate
     for ii = 1:length(Alignment_Times)
-        t_start = Alignment_Times(ii) + max_fr_time - window_size;
-        t_end = Alignment_Times(ii) + max_fr_time + window_size;
+        t_start = Alignment_Times(ii) + max_fr_time - half_window_length;
+        t_end = Alignment_Times(ii) + max_fr_time + half_window_length;
         pertrial_mpfr{jj,1}(ii,1) = length(find((spikes >= t_start) & ...
-                (spikes <= t_end))) / (2*window_size);
+                (spikes <= t_end))) / (2*half_window_length);
     end
 
     %% Defining the output variables

@@ -12,18 +12,9 @@ end
 %% Display the function being used
 disp('Overlap Plot Firing Rate Function:');
 
-%% Load the excel file
-if ~ischar(unit_name)
-
-    [xds_output] = Find_Excel(xds_morn);
-
-    %% Find the unit of interest
-
-    unit = xds_output.unit_names(unit_name);
-
-else
-    unit = unit_name;
-end
+%% Find the unit of interest
+[N] = Find_Unit(xds_morn, unit_name);
+unit = xds_morn.unit_names(N);
 
 %% Extract the target directions & centers
 [target_dirs_morn, target_centers_morn] = Identify_Targets(xds_morn);
@@ -32,21 +23,27 @@ end
 %% Begin the loop through all directions
 avg_hists_spikes_morn = struct([]);
 for jj = 1:length(target_dirs_morn)
-    [avg_hists_spikes_morn{jj}, ~, bin_size] = ...
+    [avg_hists_spikes_morn{jj}, ~] = ...
         EventWindow(xds_morn, unit_name, target_dirs_morn(jj), target_centers_morn(jj), event);
 end
 
 avg_hists_spikes_noon = struct([]);
 for jj = 1:length(target_dirs_noon)
-    [avg_hists_spikes_noon{jj}, ~, ~] = ...
+    [avg_hists_spikes_noon{jj}, ~] = ...
         EventWindow(xds_noon, unit_name, target_dirs_noon(jj), target_centers_noon(jj), event);
 end
 
 %% Basic Settings, some variable extractions, & definitions
 
-% Event lengths
-before_event = 3;
-after_event = 3;
+% Pull the binning paramaters
+[Bin_Params] = Binning_Parameters;
+
+% Time before & after the event
+before_event = Bin_Params.before_event;
+after_event = Bin_Params.after_event;
+
+% Binning information
+bin_size = Bin_Params.bin_size; % Time (sec.)
 
 if contains(event, 'gocue') || contains(event, 'force_onset')
     % Define the window for the baseline phase
@@ -94,9 +91,9 @@ for ii = 1:length(avg_hists_spikes_morn)
     hold on
 
     % Morning
-    morn_line = plot(spike_time, avg_hists_spikes_morn{ii,1}, 'LineWidth', plot_line_size, 'Color', [0.9290, 0.6940, 0.1250]);
+    morn_line = plot(spike_time, avg_hists_spikes_morn{ii}, 'LineWidth', plot_line_size, 'Color', [0.9290, 0.6940, 0.1250]);
     % Afternoon
-    noon_line = plot(spike_time, avg_hists_spikes_noon{ii,1}, 'LineWidth', plot_line_size, 'Color', [.5 0 .5]);
+    noon_line = plot(spike_time, avg_hists_spikes_noon{ii}, 'LineWidth', plot_line_size, 'Color', [.5 0 .5]);
     
     %% Set the title, labels, axes, & plot lines indicating alignment
 

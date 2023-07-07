@@ -8,126 +8,69 @@ close all
 
 disp('Record Raster Plot:');
 
+% Monkey Name
+Monkey = 'Pop';
+
 % Select The Date & Task To Analyze
 Date = '20211020';
 Task = 'WS';
-% Do You Want To Process The XDS File? (1 = Yes; 0 = No)
-Process_XDS = 1;
+% Sorted or unsorted (1 vs 0)
+Sorted = 1;
 
-[~, xds] = Load_XDS(Date, Task, Process_XDS);
+% Load the xds files
+xds = Load_XDS(Monkey, Date, Task, Sorted, 'Morn');
+xds_noon = Load_XDS(Monkey, Date, Task, Sorted, 'Noon');
+
+% Process the xds files
+Match_The_Targets = 0;
+[xds, ~] = Process_XDS(xds, xds_noon, Match_The_Targets);
 
 unit_name = 'elec39_1';
 
-N = strcmp(xds.unit_names, unit_name);
+% Find the unit of interest
+[N] = Find_Unit(xds, unit_name);
 
-%% Some variable extraction & definitions
+%% Basic settings, some variable extractions, & definitions
+
+event = 'window_trial_gocue';
+
+% Extract all the spikes of the unit
+spikes = xds.spikes{1, N};
 
 % Define the window for the baseline phase
 time_before_gocue = 0.4;
 
 raster_length = 2;
 
-% Extract the trial directions
-target_dir_idx = round(xds.trial_target_dir);
-% Extract the go-cue times
-gocue_time = xds.trial_gocue_time;
-% Extract the trial end times
-end_time = xds.trial_end_time;
+% Extract the target directions & centers
+[target_dirs, target_centers] = Identify_Targets(xds);
 
 % Font specifications
 label_font_size = 20;
 
-%% Removing non-numbers in the trial target directions
-
-nan_idx_dir = isnan(target_dir_idx);
-target_dir_idx(nan_idx_dir) = [];
-clear nan_idx_dir
-
 %% Indexes for rewarded trials in all directions
-
-% Select the first direction (Start with the minimum direction value)
-target_dir = unique(target_dir_idx);
 
 % Finding the window of the movement phase
 [max_float_avg_idx, bin_size, ~] = GoCueWindow(xds, unit_name);
 % Window to calculate max firing rate
 fr_window = (0.1 / bin_size);
 
-%% Indexes for rewarded trials
-
-total_rewarded_trial_idx = find((xds.trial_result == 'R') & (xds.trial_target_dir == target_dir(3)));
-
-%% Find the number of targets in that particular direction
-% Find which column holds the target centers
-tgt_Center_idx = contains(xds.trial_info_table_header, 'tgtCenter');
-if ~any(tgt_Center_idx)
-    tgt_Center_idx = contains(xds.trial_info_table_header, 'tgtCtr');
-end
-
-% Pull the target center coordinates of each succesful trial   
-tgt_cntrs = struct([]);
-for ii = 1:height(total_rewarded_trial_idx)
-    tgt_cntrs{ii,1} = xds.trial_info_table{total_rewarded_trial_idx(ii), tgt_Center_idx};
-end
-    
-% Convert the centers into polar coordinates
-target_centers_morn = zeros(height(total_rewarded_trial_idx), 1);
-for ii = 1:height(total_rewarded_trial_idx)
-    target_centers_morn(ii) = sqrt((tgt_cntrs{ii,1}(1,1))^2 + (tgt_cntrs{ii,1}(1,2))^2);
-end
-
-% Find the number of unique target centers
-unique_targets_morn = unique(target_centers_morn);
-    
-%% Redifine the rewarded_idx according to the target center
-rewarded_trial_idx = total_rewarded_trial_idx(target_centers_morn == unique_targets_morn(1));
-
-%% Loop to extract only rewarded trials 
-% Rewarded go-cues
-rewarded_gocue_time = zeros(length(rewarded_trial_idx),1);
-for ii = 1:length(rewarded_trial_idx)
-    rewarded_gocue_time(ii) = gocue_time(rewarded_trial_idx(ii));
-end
-   
-% Rewarded end times
-rewarded_end_time = zeros(length(rewarded_trial_idx),1);
-for ii = 1:length(rewarded_trial_idx)
-    rewarded_end_time(ii) = end_time(rewarded_trial_idx(ii));
-end
-    
-%% Removing non-numbers
-% Remove non-numbers in rewarded go-cue's
-nan_idx_gocue = find(isnan(rewarded_gocue_time));
-rewarded_gocue_time(nan_idx_gocue) = [];
-rewarded_end_time(nan_idx_gocue) = [];
-rewarded_trial_idx(nan_idx_gocue) = [];
-clear nan_idx_gocue
-
-% Remove non-numbers in rewarded end times
-nan_idx_end_time = find(isnan(rewarded_end_time));
-rewarded_gocue_time(nan_idx_end_time) = [];
-rewarded_end_time(nan_idx_end_time) = [];
-rewarded_trial_idx(nan_idx_end_time) = [];
-clear nan_idx_end_time
+%% Times for rewarded trials
+[rewarded_gocue_time] = GoCueAlignmentTimes(xds, target_dirs(3), target_centers(3));
+[rewarded_end_time] = TrialEndAlignmentTimes(xds, target_dirs(3), target_centers(3));
+[Alignment_Times] = EventAlignmentTimes(xds, target_dirs(3), target_centers(3), event);
 
 %% Times between events
 
 % Find time between the go-cue and reward
 gocue_to_reward = rewarded_end_time - rewarded_gocue_time;
 
-%% Picking the timings for the events to be aligned
-
-event_time_idx = xds.trial_gocue_time(rewarded_trial_idx);
-
-t1 = event_time_idx - raster_length + 1;
-t2 = event_time_idx + raster_length + 1;
-
 %% Getting the spike timestamps based on the behavior timings above
-spikes = xds.spikes{1, N};
 
 aligned_spike_timing = struct([]);
-for ii = 1:length(event_time_idx)
-    aligned_spike_timing{ii, 1} = spikes((spikes > t1(ii)) & (spikes < t2(ii)));
+for ii = 1:length(rewarded_gocue_time)
+    aligned_spike_timing{ii, 1} = spikes((spikes > (Alignment_Times(ii) - before_event)) & ... 
+        (spikes < (Alignment_Times(ii) + after_event)));
 end
 
 %% Plotting peri-event rasters on the lower pannel of the the figure
@@ -137,7 +80,7 @@ figure('Position', [350 350 700 250]);
 hold on
 
 % Setting the y-axis limits
-ylim([0, length(rewarded_trial_idx)+1])
+ylim([0, length(Alignment_Times)+1])
 ylims = ylim;
 % Setting the x-axis limits
 xlim([-raster_length + 1, raster_length + 1]);
@@ -159,13 +102,13 @@ for ii = 1:length(aligned_spike_timing)
     cc = 1;
     % The main raster plot
     for pp = 1:length(aligned_spike_timing{ii,1})
-        if (aligned_spike_timing{ii, 1}(pp,1) - event_time_idx(ii)) >= gocue_to_reward(ii) && isequal(cc, 1)
+        if (aligned_spike_timing{ii, 1}(pp,1) - Alignment_Times(ii)) >= gocue_to_reward(ii) && isequal(cc, 1)
             % Plot the rewarded trials as red dots
             plot(gocue_to_reward(ii), ii,... 
                 'marker', '.', 'color', 'r', 'markersize', 15);
             cc = 1;
         end
-        plot(aligned_spike_timing{ii, 1}(pp,1) - event_time_idx(ii), ii,... 
+        plot(aligned_spike_timing{ii, 1}(pp,1) - Alignment_Times(ii), ii,... 
             'marker', '.', 'color', 'k', 'markersize', 3, 'linestyle', 'none');
         M(mm) = getframe(gcf);
         mm = mm + 1;

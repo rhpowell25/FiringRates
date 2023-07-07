@@ -3,18 +3,9 @@ function [bsfr_p_val, mpfr_p_val] = FiringRateHists(xds_morn, xds_noon, unit_nam
 %% Display the function being used
 disp('Firing Rate Histogram Function:');
 
-%% Load the excel file
-if ~ischar(unit_name)
-
-    [xds_output] = Find_Excel(xds_morn);
-
-    %% Find the unit of interest
-
-    unit = xds_output.unit_names(unit_name);
-
-else
-    unit = unit_name;
-end
+%% Find the unit of interest
+[N] = Find_Unit(xds_morn, unit_name);
+unit = xds_morn.unit_names(N);
 
 %% Get the firing rates based on the event
 [~, ~, bsfr_morn] = BaselineFiringRate(xds_morn, unit_name);

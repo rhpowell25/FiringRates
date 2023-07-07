@@ -7,37 +7,38 @@ if isnan(max_YLims)
     return
 end
 
-%% Load the excel file
-if ~ischar(unit_name)
-
-    [xds_output] = Find_Excel(xds);
-
-    %% Find the unit of interest
-
-    unit = xds_output.unit_names(unit_name);
-
-else
-    unit = unit_name;
-end
+%% Find the unit of interest
+[N] = Find_Unit(xds, unit_name);
+unit = xds.unit_names(N);
 
 %% Extract the target directions & centers
 [target_dirs, target_centers] = Identify_Targets(xds);
 
 %% Begin the loop through all directions
 avg_hists_spikes = struct([]);
+max_fr_time = zeros(length(target_dirs),1);
 for jj = 1:length(target_dirs)
-    [avg_hists_spikes{jj}, max_fr_time, bin_size] = ...
+    [avg_hists_spikes{jj}, max_fr_time(jj)] = ...
         EventWindow(xds, unit_name, target_dirs(jj), target_centers(jj), event);
 end
 
 %% Basic Settings, some variable extractions, & definitions
 
-% Event lengths
-before_event = 3;
-after_event = 3;
+% Pull the binning paramaters
+[Bin_Params] = Binning_Parameters;
+
+% Time before & after the event
+before_event = Bin_Params.before_event;
+after_event = Bin_Params.after_event;
+
+% Binning information
+bin_size = Bin_Params.bin_size; % Time (sec.)
+
+% Define the figure titles
+fig_title = strings;
 
 % Window to calculate max firing rate
-window_size = 0.1;
+half_window_length = Bin_Params.half_window_length; % Time (sec.)
 
 if ~contains(event, 'window')
     max_fr_time = 0;
@@ -49,6 +50,13 @@ if contains(event, 'gocue') || contains(event, 'force_onset')
 elseif contains(event, 'end')
     % Define the window for the movement phase
     time_before_end = xds.meta.TgtHold;
+end
+
+% Add the session information to the save title
+if contains(xds.meta.rawFileName, 'Pre')
+    session_save_title = '(Morn)';
+elseif contains(xds.meta.rawFileName, 'Post')
+    session_save_title = '(Noon)';
 end
 
 % Font specifications
@@ -74,13 +82,30 @@ for ii = 1:length(avg_hists_spikes)
     Firing_Rate_figure.Position = [300 300 figure_width figure_height];
     hold on
 
-    plot(spike_time, avg_hists_spikes{ii,1}, 'LineWidth', plot_line_size)
+    plot(spike_time, avg_hists_spikes{ii}, 'LineWidth', plot_line_size)
 
     %% Set the title, labels, axes, & plot lines indicating alignment
 
-    % Title
-    title(sprintf('Mean firing rate of %s: %i°, TgtCenter at %0.1f', ... 
-        char(unit), target_dirs(ii), target_centers(ii)), 'FontSize', title_font_size)
+    % Titling the rasters
+    if strcmp(event, 'trial_gocue')
+        raster_title = strcat(char(xds.unit_names(N)), {' '}, 'aligned to trial gocue:');
+    else
+        if contains(event, 'window')
+            temp_event = strrep(event, 'window_', '');
+        else
+            temp_event = event;
+        end
+        event_title = strcat('aligned to', {' '}, strrep(temp_event, '_', {' '}), ':');
+        raster_title = strcat(char(unit), {' '}, event_title, {' '}, num2str(target_dirs(ii)), ...
+            '°, TgtCenter at', {' '}, num2str(target_centers(ii)));
+    end
+    if contains(xds.meta.rawFileName, 'Pre')
+        raster_title = strcat(raster_title, {' '}, '(Morning)');
+    end
+    if contains(xds.meta.rawFileName, 'Post')
+        raster_title = strcat(raster_title, {' '}, '(Afternoon)');
+    end
+    title(raster_title, 'FontSize', title_font_size)
 
     % Axis Labels
     ylabel('Firing Rate (Hz)', 'FontSize', (label_font_size - 5));
@@ -116,10 +141,10 @@ for ii = 1:length(avg_hists_spikes)
 
     if contains(event, 'window')
         % Dotted purple line indicating beginning of measured window
-        line([max_fr_time - window_size, max_fr_time - window_size], ... 
+        line([max_fr_time(ii) - half_window_length, max_fr_time(ii) - half_window_length], ... 
             [ylims(1), ylims(2)], 'linewidth', plot_line_size,'color',[.5 0 .5],'linestyle','--');
         % Dotted purple line indicating end of measured window
-        line([max_fr_time + window_size, max_fr_time + window_size], ... 
+        line([max_fr_time(ii) + half_window_length, max_fr_time(ii) + half_window_length], ... 
             [ylims(1), ylims(2)], 'linewidth', plot_line_size,'color',[.5 0 .5],'linestyle','--');
     elseif ~contains(event, 'trial_gocue') && ~contains(event, 'trial_end')
         % Dotted red line indicating beginning of measured window
@@ -151,22 +176,20 @@ end % End of target direction loop
 %% Define the save directory & save the figures
 if ~isequal(Save_Figs, 0)
     save_dir = 'C:\Users\rhpow\Desktop\';
-    for ii = 1:length(findobj('type','figure'))
-        fig_info = get(gca,'title');
-        fig_title = get(fig_info, 'string');
-        fig_title = strrep(fig_title, ':', '');
-        fig_title = strrep(fig_title, 'vs.', 'vs');
-        fig_title = strrep(fig_title, 'mg.', 'mg');
-        fig_title = strrep(fig_title, 'kg.', 'kg');
-        fig_title = strrep(fig_title, '.', '_');
-        fig_title = strrep(fig_title, '/', '_');
-        title '';
+    for ii = length(findobj('type','figure')):-1:1
+        fig_title{ii} = strrep(fig_title{ii}, ':', '');
+        fig_title{ii} = strrep(fig_title{ii}, 'vs.', 'vs');
+        fig_title{ii} = strrep(fig_title{ii}, 'mg.', 'mg');
+        fig_title{ii} = strrep(fig_title{ii}, 'kg.', 'kg');
+        fig_title{ii} = strrep(fig_title{ii}, '.', '_');
+        fig_title{ii} = strrep(fig_title{ii}, '/', '_');
+        fig_title{ii} = char(strcat(fig_title{ii}, {' '}, session_save_title));
         if strcmp(Save_Figs, 'All')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'png')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'pdf')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'fig')
+            saveas(gcf, fullfile(save_dir, char(fig_title{ii})), 'png')
+            saveas(gcf, fullfile(save_dir, char(fig_title{ii})), 'pdf')
+            saveas(gcf, fullfile(save_dir, char(fig_title{ii})), 'fig')
         else
-            saveas(gcf, fullfile(save_dir, char(fig_title)), Save_Figs)
+            saveas(gcf, fullfile(save_dir, char(fig_title{ii})), Save_Figs)
         end
         close gcf
     end

@@ -1,20 +1,7 @@
 function RasterPlot(xds, unit_name, event, heat_map, Save_Figs)
 
-%% Load the excel file
-if ~ischar(unit_name)
-
-    [xds_output] = Find_Excel(xds);
-
-    %% Find the unit of interest
-
-    unit = xds_output.unit_names(unit_name);
-
-    %% Identify the index of the unit
-    N = find(strcmp(xds.unit_names, unit));
-
-else
-    N = find(strcmp(xds.unit_names, unit_name));
-end
+%% Find the unit of interest
+[N] = Find_Unit(xds, unit_name);
 
 %% End the function with NaN output variables if the unit doesnt exist
 if isempty(N)
@@ -30,14 +17,16 @@ spikes = xds.spikes{1, N};
 % Define the window for the baseline phase
 time_before_gocue = 0.4;
 % Define the window for the movement phase
-time_before_end = xds.meta.TgtHold;
+if contains(event, 'trial_end')
+    time_before_end = xds.meta.TgtHold;
+end
 
-% Time before & after the gocue
-before_event = 3.0;
-after_event = 3.0;
+% Pull the binning paramaters
+[Bin_Params] = Binning_Parameters;
 
-% Window to calculate max firing rate
-window_size = 0.1;
+% Time before & after the event
+before_event = Bin_Params.before_event;
+after_event = Bin_Params.after_event;
 
 % Extract the target directions & centers
 [target_dirs, target_centers] = Identify_Targets(xds);
@@ -70,10 +59,11 @@ for jj = 1:num_dir
     %% Time period for peak firing rate
     if contains(event, 'window')
         % Run the preferred direction window function
-        [~, max_fr_time, bin_size] = EventWindow(xds, unit_name, target_dirs(jj), target_centers(jj), event);
+        [~, max_fr_time] = EventWindow(xds, unit_name, target_dirs(jj), target_centers(jj), event);
+        half_window_length = Bin_Params.half_window_length; % Time (sec.)
         window_color = [.5 0 .5];
     else
-        bin_size = 0.04;
+        bin_size = Bin_Params.bin_size; % Time (sec.)
         max_fr_time = 0;
         window_color = 'r';
     end
@@ -165,12 +155,12 @@ for jj = 1:num_dir
     ylims = ylim;
 
     % Setting the x-axis limits
-    if contains(event, 'gocue')
-        xlim([-before_event + 2, after_event]);
+    if contains(event, 'gocue') || contains(event, 'onset')
+        xlim([-1, after_event]);
     elseif contains(event, 'end')
-        xlim([-before_event, after_event - 2]);
+        xlim([-before_event, 1]);
     else
-        xlim([-before_event + 1, after_event - 1]);
+        xlim([-before_event, after_event]);
     end
 
     if contains(event, 'gocue')
@@ -192,10 +182,10 @@ for jj = 1:num_dir
 
     if ~strcmp(event, 'trial_gocue') && ~strcmp(event, 'trial_end')
         % Dotted line indicating beginning of measured window
-        line([max_fr_time - window_size, max_fr_time - window_size], ... 
+        line([max_fr_time - half_window_length, max_fr_time - half_window_length], ... 
             [ylims(1), ylims(2)], 'linewidth', 2, 'Color', window_color, 'Linestyle','--');
         % Dotted line indicating end of measured window
-        line([max_fr_time + window_size, max_fr_time + window_size], ... 
+        line([max_fr_time + half_window_length, max_fr_time + half_window_length], ... 
             [ylims(1), ylims(2)], 'linewidth', 2, 'Color', window_color, 'Linestyle','--');
     end
 
@@ -260,7 +250,7 @@ if ~isequal(Save_Figs, 0)
         fig_title = strrep(fig_title, 'kg.', 'kg');
         fig_title = strrep(fig_title, '.', '_');
         fig_title = strrep(fig_title, '/', '_');
-        title '';
+        %title '';
         if strcmp(Save_Figs, 'All')
             saveas(gcf, fullfile(save_dir, char(fig_title)), 'png')
             saveas(gcf, fullfile(save_dir, char(fig_title)), 'pdf')

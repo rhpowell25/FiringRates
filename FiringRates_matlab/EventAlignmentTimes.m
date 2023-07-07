@@ -1,21 +1,26 @@
 function [Alignment_Times] = EventAlignmentTimes(xds, target_dir, target_center, event)
 
 %% Run the function according to the event
+if contains(event, 'trial_start')
+    [Alignment_Times] = TrialStartAlignmentTimes(xds, target_dir, target_center);
+end
 
 if contains(event, 'trial_gocue')
     [Alignment_Times] = GoCueAlignmentTimes(xds, target_dir, target_center);
 end
 
+if contains(event, 'trial_end')
+    [Alignment_Times] = TrialEndAlignmentTimes(xds, target_dir, target_center);
+end
+
 if contains(event, 'task_onset')
     if strcmp(xds.meta.task, 'multi_gadget') || strcmp(xds.meta.task, 'WB')
        [Alignment_Times] = ForceOnsetAlignmentTimes(xds, target_dir, target_center);
-    else
+    elseif isfield(xds, 'curs_p')
         [Alignment_Times] = CursorOnsetAlignmentTimes(xds, target_dir, target_center);
+    else
+        [Alignment_Times] = EMGOnsetAlignmentTimes(xds, target_dir, target_center);
     end
-end
-
-if contains(event, 'trial_end')
-    [Alignment_Times] = TrialEndAlignmentTimes(xds, target_dir, target_center);
 end
 
 if contains(event, 'cursor_onset')
@@ -40,6 +45,10 @@ end
 
 if contains(event, 'force_max')
     [Alignment_Times] = ForceMaxAlignmentTimes(xds, target_dir, target_center);
+end
+
+if contains(event, 'EMG_onset')
+    [Alignment_Times] = EMGOnsetAlignmentTimes(xds, target_dir, target_center);
 end
 
 if contains(event, 'EMG_max')

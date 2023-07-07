@@ -12,18 +12,9 @@ end
 %% Display the function being used
 disp('Overlap Polar Plot Function:');
 
-%% Load the excel file
-if ~ischar(unit_name)
-
-    [xds_output] = Find_Excel(xds_morn);
-
-    %% Find the unit of interest
-
-    unit = xds_output.unit_names(unit_name);
-
-else
-    unit = unit_name;
-end
+%% Find the unit of interest
+[N] = Find_Unit(xds_morn, unit_name);
+unit = xds_morn.unit_names(N);
 
 %% Some variable extraction & definitions
 

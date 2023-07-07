@@ -1,50 +1,42 @@
 function Trial_Summary(xds_morn, xds_noon, event, unit_name, Save_Figs)
 
-%% Load the excel file
-if ~ischar(unit_name)
-
-    [xds_output] = Find_Excel(xds_morn);
-
-    %% Find the unit of interest
-
-    unit = xds_output.unit_names(unit_name);
-
-    %% Identify the index of the unit
-    N = find(strcmp(xds_morn.unit_names, unit));
-
-end
-
-if ischar(unit_name) && ~strcmp(unit_name, 'All')
-    N = find(strcmp(xds_morn.unit_names, unit_name));
-end
+%% Find the unit of interest
+[N_morn] = Find_Unit(xds_morn, unit_name);
+[N_noon] = Find_Unit(xds_noon, unit_name);
 
 %% Extract the target directions & centers
 [target_dirs_morn, target_centers_morn] = Identify_Targets(xds_morn);
 [target_dirs_noon, target_centers_noon] = Identify_Targets(xds_noon);
 
+%% Pull the binning paramaters
+[Bin_Params] = Binning_Parameters;
+
+% Time before & after the event
+before_event = Bin_Params.before_event;
+after_event = Bin_Params.after_event;
+
+% Binning information
+bin_size = Bin_Params.bin_size; % Time (sec.)
+
+% Window to calculate max firing rate
+half_window_length = Bin_Params.half_window_length; % Time (sec.)
+
 %% Begin the loop through all directions
 avg_hists_spikes_morn = struct([]);
 max_fr_time_morn = zeros(length(target_dirs_morn), 1);
 for jj = 1:length(target_dirs_morn)
-    [avg_hists_spikes_morn{jj}, max_fr_time_morn(jj), bin_size] = ...
+    [avg_hists_spikes_morn{jj}, max_fr_time_morn(jj)] = ...
         EventWindow(xds_morn, unit_name, target_dirs_morn(jj), target_centers_morn(jj), event);
 end
 
 avg_hists_spikes_noon = struct([]);
 max_fr_time_noon = zeros(length(target_dirs_noon), 1);
 for jj = 1:length(target_dirs_noon)
-    [avg_hists_spikes_noon{jj}, max_fr_time_noon(jj), ~] = ...
+    [avg_hists_spikes_noon{jj}, max_fr_time_noon(jj)] = ...
         EventWindow(xds_noon, unit_name, target_dirs_noon(jj), target_centers_noon(jj), event);
 end
 
 %% Basic settings, some variable extractions, & definitions
-
-% Event lengths
-before_event = 3;
-after_event = 3;
-
-% Window to calculate max firing rate
-window_size = 0.1;
 
 if ~contains(event, 'window')
     max_fr_time_morn = zeros(length(target_dirs_morn), 1);
@@ -56,7 +48,7 @@ if contains(event, 'gocue') || contains(event, 'force_onset')
     time_before_gocue = 0.4;
 elseif contains(event, 'end')
     % Define the window for the movement phase
-    time_before_end = xds.meta.TgtHold;
+    time_before_end = xds_morn.meta.TgtHold;
 end
 
 % Font specifications
@@ -70,8 +62,8 @@ figure_width = 700;
 figure_height = 700;
 
 % Extract all the spikes of the unit
-morn_spikes = xds_morn.spikes{1, N};
-noon_spikes = xds_noon.spikes{1, N};
+morn_spikes = xds_morn.spikes{1, N_morn};
+noon_spikes = xds_noon.spikes{1, N_noon};
 
 % Find matching targets between the two sessions
 [Matching_Idxs_Morn, Matching_Idxs_Noon] = ...
@@ -119,9 +111,9 @@ for jj = 1:num_dir
     hold on
 
     % Set the common title
-    fig_title = strcat('Trial Summary -', {' '}, char(xds_morn.unit_names(N)), {' '}, num2str(target_dirs_morn(jj)), ...
-        '°, TgtCenter at', {' '}, num2str(target_centers_morn(jj)));
-    sgtitle(fig_title, 'FontSize', (title_font_size + 5));
+    fig_title = strcat(char(xds_morn.unit_names(N_morn)), {' '}, num2str(target_dirs_morn(jj)), ...
+        '°, TgtCenter at', {' '}, num2str(target_centers_morn(jj)), {' '}, event);
+    sgtitle(fig_title, 'FontSize', (title_font_size + 5), 'Interpreter', 'None');
 
     %% Times between events
     % Find time between the go-cue and reward
@@ -196,10 +188,10 @@ for jj = 1:num_dir
 
     if contains(event, 'window')
         % Dotted purple line indicating beginning of measured window
-        line([max_fr_time_morn(jj) - window_size, max_fr_time_morn(jj) - window_size], ... 
+        line([max_fr_time_morn(jj) - half_window_length, max_fr_time_morn(jj) - half_window_length], ... 
             [ylims(1), ylims(2)], 'linewidth', plot_line_size,'color',[.5 0 .5],'linestyle','--');
         % Dotted purple line indicating end of measured window
-        line([max_fr_time_morn(jj) + window_size, max_fr_time_morn(jj) + window_size], ... 
+        line([max_fr_time_morn(jj) + half_window_length, max_fr_time_morn(jj) + half_window_length], ... 
             [ylims(1), ylims(2)], 'linewidth', plot_line_size,'color',[.5 0 .5],'linestyle','--');
     elseif ~contains(event, 'trial_gocue') && ~contains(event, 'trial_end')
         % Dotted red line indicating beginning of measured window
@@ -278,10 +270,10 @@ for jj = 1:num_dir
 
     if contains(event, 'window')
         % Dotted purple line indicating beginning of measured window
-        line([max_fr_time_noon(jj) - window_size, max_fr_time_noon(jj) - window_size], ... 
+        line([max_fr_time_noon(jj) - half_window_length, max_fr_time_noon(jj) - half_window_length], ... 
             [ylims(1), ylims(2)], 'linewidth', plot_line_size,'color',[.5 0 .5],'linestyle','--');
         % Dotted purple line indicating end of measured window
-        line([max_fr_time_noon(jj) + window_size, max_fr_time_noon(jj) + window_size], ... 
+        line([max_fr_time_noon(jj) + half_window_length, max_fr_time_noon(jj) + half_window_length], ... 
             [ylims(1), ylims(2)], 'linewidth', plot_line_size,'color',[.5 0 .5],'linestyle','--');
     elseif ~contains(event, 'trial_gocue') && ~contains(event, 'trial_end')
         % Dotted red line indicating beginning of measured window
@@ -371,28 +363,30 @@ for jj = 1:num_dir
     % Set The Font
     set(figure_axes,'FontName', font_name);
 
+    %% Define the save directory & save the figures
+    if ~isequal(Save_Figs, 0)
+        save_dir = 'C:\Users\rhpow\Desktop\';
+        for ii = 1:length(findobj('type','figure'))
+            fig_title = strrep(fig_title, ':', '');
+            fig_title = strrep(fig_title, 'vs.', 'vs');
+            fig_title = strrep(fig_title, 'mg.', 'mg');
+            fig_title = strrep(fig_title, 'kg.', 'kg');
+            fig_title = strrep(fig_title, '.', '_');
+            fig_title = strrep(fig_title, '/', '_');
+            %title '';
+            if strcmp(Save_Figs, 'All')
+                saveas(gcf, fullfile(save_dir, char(fig_title)), 'png')
+                saveas(gcf, fullfile(save_dir, char(fig_title)), 'pdf')
+                saveas(gcf, fullfile(save_dir, char(fig_title)), 'fig')
+            else
+                saveas(gcf, fullfile(save_dir, char(fig_title)), Save_Figs)
+            end
+            close gcf
+        end
+    end
+
 end
 
-%% Define the save directory & save the figures
-if ~isequal(Save_Figs, 0)
-    save_dir = 'C:\Users\rhpow\Desktop\';
-    for ii = 1:length(findobj('type','figure'))
-        fig_title = strrep(fig_title, ':', '');
-        fig_title = strrep(fig_title, 'vs.', 'vs');
-        fig_title = strrep(fig_title, 'mg.', 'mg');
-        fig_title = strrep(fig_title, 'kg.', 'kg');
-        fig_title = strrep(fig_title, '.', '_');
-        fig_title = strrep(fig_title, '/', '_');
-        %title '';
-        if strcmp(Save_Figs, 'All')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'png')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'pdf')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'fig')
-        else
-            saveas(gcf, fullfile(save_dir, char(fig_title)), Save_Figs)
-        end
-        close gcf
-    end
-end
+
 
 

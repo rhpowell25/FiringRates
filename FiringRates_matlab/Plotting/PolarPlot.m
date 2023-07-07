@@ -3,18 +3,9 @@ function PolarPlot(xds, unit_name, event, max_RLims, Save_Figs)
 %% Display the function being used
 disp('Polar Plot Function:');
 
-%% Load the excel file
-if ~ischar(unit_name)
-
-    [xds_output] = Find_Excel(xds);
-
-    %% Find the unit of interest
-
-    unit = xds_output.unit_names(unit_name);
-
-else
-    unit = unit_name;
-end
+%% Find the unit of interest
+[N] = Find_Unit(xds, unit_name);
+unit = xds.unit_names(N);
 
 %% Some variable extraction & definitions
 
@@ -29,6 +20,13 @@ font_name = 'Arial';
 if ~isequal(Save_Figs, 0)
     % Do you want a save title or blank title (1 = save_title, 0 = blank)
     Fig_Save_Title = 0;
+end
+
+% Add the session information to the save title
+if contains(xds.meta.rawFileName, 'Pre')
+    session_save_title = '(Morn)';
+elseif contains(xds.meta.rawFileName, 'Post')
+    session_save_title = '(Noon)';
 end
 
 %% Retrieve the baseline and movement phase firing rates

@@ -1,4 +1,3 @@
-
 function max_YLim = YLimit(xds_morn, xds_noon, event, unit_name)
 
 %% Display the functions being used
@@ -11,13 +10,13 @@ disp('Y-Limit Function:');
 %% Begin the loop through all directions
 avg_hists_spikes_morn = struct([]);
 for jj = 1:length(target_dirs_morn)
-    [avg_hists_spikes_morn{jj}, ~, ~] = ...
+    [avg_hists_spikes_morn{jj}, ~ ]= ...
         EventWindow(xds_morn, unit_name, target_dirs_morn(jj), target_centers_morn(jj), event);
 end
 
 avg_hists_spikes_noon = struct([]);
 for jj = 1:length(target_dirs_noon)
-    [avg_hists_spikes_noon{jj}, ~, ~] = ...
+    [avg_hists_spikes_noon{jj}, ~] = ...
         EventWindow(xds_noon, unit_name, target_dirs_noon(jj), target_centers_noon(jj), event);
 end
 

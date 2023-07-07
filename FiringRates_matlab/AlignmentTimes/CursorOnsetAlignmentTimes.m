@@ -1,9 +1,18 @@
 function [Alignment_Times] = CursorOnsetAlignmentTimes(xds, target_dir, target_center)
 
+%% Catch possible sources of error
+
+% If there is no cursor information
+if ~isfield(xds, 'curs_p')
+    disp('No cursor information in this file');
+    Alignment_Times = NaN;
+    return
+end
+
 %% Basic settings, some variable extractions, & definitions
 
 % Window to calculate the cursor onset
-window_size = 2; % Bins
+half_window_size = 1; % Bins
 step_size = 1; % Bins
 
 %% Times for rewarded trials
@@ -38,7 +47,7 @@ end
 cursor_onset_idx = zeros(length(rewarded_gocue_time),1);
 % Loop through cursor position
 for ii = 1:length(rewarded_gocue_time)
-    [sliding_avg, ~, ~] = Sliding_Window(z_cursor_p{ii,1}, window_size, step_size);
+    [sliding_avg, ~, ~] = Sliding_Window(z_cursor_p{ii,1}, half_window_size, step_size);
     % Find the peak cursor position
     temp_1 = find(sliding_avg == max(sliding_avg));
     % Find the onset of this peak

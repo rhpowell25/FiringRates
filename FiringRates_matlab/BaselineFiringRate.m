@@ -1,30 +1,14 @@
-function [bs_fr, std_bs, all_trials_bs_fr] = ...
-    BaselineFiringRate(xds, unit_name)
+function [bs_fr, std_bs, err_bs, all_trials_bs_fr] = BaselineFiringRate(xds, unit_name)
 
-%% Load the excel file
-if ~ischar(unit_name)
-
-    [xds_output] = Find_Excel(xds);
-
-    %% Find the unit of interest
-    
-    try
-        unit = xds_output.unit_names(unit_name);
-        % Identify the index of the unit
-        N = find(strcmp(xds.unit_names, unit));
-    catch
-        N = [];
-    end
-
-else
-    N = find(strcmp(xds.unit_names, unit_name));
-end
+%% Find the unit of interest
+[N] = Find_Unit(xds, unit_name);
 
 %% End the function with NaN output variables if the unit doesnt exist
 if isempty(N)
     fprintf('%s does not exist \n', unit_name);
     bs_fr = NaN;
     std_bs = NaN;
+    err_bs = NaN;
     all_trials_bs_fr = NaN;
     return
 end
@@ -60,19 +44,21 @@ for jj = 1:num_dirs
     %% Define the output variables
     if jj == 1 && ~isequal(per_dir_bsfr, 0)
         bs_fr = zeros(num_dirs, 1);
-        all_trials_bs_fr = struct([]);
         std_bs = zeros(num_dirs, 1);
+        err_bs = zeros(num_dirs, 1);
+        all_trials_bs_fr = struct([]);
     elseif jj == 1 && ~isequal(per_dir_bsfr, 1)
         bs_fr = zeros(1, 1);
-        all_trials_bs_fr = struct([]);
         std_bs = zeros(1, 1);
+        err_bs = zeros(1, 1);
+        all_trials_bs_fr = struct([]);
     end 
 
     %% Baseline Firing Rate
     for ii = 1:length(rewarded_gocue_time)
         t_start = rewarded_gocue_time(ii) - time_before_gocue;
         t_end = rewarded_gocue_time(ii);
-        all_trials_bs_fr{jj,1}(ii,1) = length(find((spikes >= t_start) & ...
+        all_trials_bs_fr{jj,1}(ii,1) = length(find((spikes >+ t_start) & ...
                 (spikes <= t_end))) / (time_before_gocue);
     end
         
@@ -82,6 +68,8 @@ for jj = 1:num_dirs
     bs_fr(jj,1) = mean(all_trials_bs_fr{jj,1});
     % Standard Deviation
     std_bs(jj,1) = std(all_trials_bs_fr{jj,1});
+    % Standard Error
+    err_bs(jj,1) = std_bs(jj,1) / sqrt(length(all_trials_bs_fr{jj,1}));
 
     % End the function after one loop if using all targets
     if isequal(per_dir_bsfr, 0)

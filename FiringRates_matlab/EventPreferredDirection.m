@@ -6,8 +6,8 @@ if strcmp(xds.meta.task, 'multi_gadget')
     return
 end
 
-%% Run the baseline and movement phase function (Aligned to trial end)
-[bs_fr, ~, ~] = BaselineFiringRate(xds, unit_name);
+%% Run the baseline and movement phase function
+[bs_fr, ~, ~, ~] = BaselineFiringRate(xds, unit_name);
 
 [mp_fr, ~, ~] = EventPeakFiringRate(xds, unit_name, event);
 
@@ -19,20 +19,6 @@ depth_mod = mp_fr - bs_fr;
 % Extract the target directions & centers
 [target_dirs, target_centers] = Identify_Targets(xds);
 unique_target_dirs = unique(target_dirs);
-
-%% Put all trials & target information into a single array
-
-%for ii = 1:length(all_trials_max_fr)
-%    if ii == 1
-%        all_trials_target_dirs = zeros(length(all_trials_max_fr{ii}),1) + target_dirs(ii);
-%        all_trials_target_centers = zeros(length(all_trials_max_fr{ii}),1) + target_centers(ii);
-%        all_trials_depth_mod = all_trials_max_fr{ii} - bs_fr;
-%    else
-%        all_trials_target_dirs = cat(1, all_trials_target_dirs, zeros(length(all_trials_max_fr{ii}),1) + target_dirs(ii));
-%        all_trials_target_centers = cat(1, all_trials_target_centers, zeros(length(all_trials_max_fr{ii}),1) + target_centers(ii));
-%        all_trials_depth_mod = cat(1, all_trials_depth_mod, all_trials_max_fr{ii} - bs_fr);
-%    end
-%end
 
 %% Find the depth of modulation of the max or min target center in each direction
 
@@ -62,6 +48,20 @@ max_mod_idx = depth_mod == max_mod;
 
 pref_dir = unique(target_dirs(max_mod_idx));
 pref_dir = pref_dir(1);
+
+% Georgopoulos
+%avg_mpfr = mean(mp_fr);
+
+%all_pref_dirs = struct([]);
+%for jj = 1:length(pertrial_mpfr)
+%    for ii = 1:length(pertrial_mpfr{jj})
+%        mpfr_diff = pertrial_mpfr{jj}(ii) - avg_mpfr;
+%        syms George_pref_dir
+%        pref_dir_eqn = pertrial_mpfr{jj}(ii) == avg_mpfr + mpfr_diff*cos(target_dirs(jj) - George_pref_dir);
+%        George_pref_dir = solve(pref_dir_eqn, George_pref_dir);
+%       all_pref_dirs{jj}(ii,1) = double(George_pref_dir(1));
+%    end
+%end
 
 %% Printing the preferred direction
 
