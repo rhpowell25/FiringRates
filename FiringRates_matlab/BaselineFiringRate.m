@@ -36,9 +36,9 @@ for jj = 1:num_dirs
     
     %% Times for rewarded trials
     if ~isequal(per_dir_bsfr, 0)
-        [rewarded_gocue_time] = EventAlignmentTimes(xds, target_dirs(jj), target_centers(jj), 'trial_gocue');
+        [rewarded_gocue_time] = EventAlignmentTimes(xds, target_dirs(jj), target_centers(jj), 'trial_goCue');
     else
-        [rewarded_gocue_time] = EventAlignmentTimes(xds, NaN, NaN, 'trial_gocue');
+        [rewarded_gocue_time] = EventAlignmentTimes(xds, NaN, NaN, 'trial_goCue');
     end
     
     %% Define the output variables

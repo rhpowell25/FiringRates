@@ -23,6 +23,8 @@ spikes = xds.spikes{1, N};
 
 % Pull the binning paramaters
 [Bin_Params] = Binning_Parameters;
+% Window to calculate max firing rate
+half_window_length = Bin_Params.half_window_length; % Time (sec.)
 
 %% Indexes for rewarded trials in all directions
 % Counts the number of directions used
@@ -37,11 +39,8 @@ for jj = 1:num_dir
     %% Time period for peak firing rate
     if contains(event, 'window')
         [~, max_fr_time] = EventWindow(xds, unit_name, target_dirs(jj), target_centers(jj), event);
-        % Window to calculate max firing rate
-        half_window_length = Bin_Params.half_window_length; % Time (sec.)
     else
         max_fr_time = 0; % Time (sec.)
-        half_window_length = 0.1; % Time (sec.)
     end
 
     %% Define the output variables

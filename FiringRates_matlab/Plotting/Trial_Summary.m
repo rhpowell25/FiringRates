@@ -76,7 +76,7 @@ if ~all(Matching_Idxs_Morn) || ~all(Matching_Idxs_Noon)
     target_centers_noon = target_centers_noon(Matching_Idxs_Noon);
     target_dirs_morn = target_dirs_morn(Matching_Idxs_Morn);
     target_dirs_noon = target_dirs_noon(Matching_Idxs_Noon);
-    avg_hists_spikes_morn = avg_hists_spikes_morn(Matching_Idxs_Noon);
+    avg_hists_spikes_morn = avg_hists_spikes_morn(Matching_Idxs_Morn);
     avg_hists_spikes_noon = avg_hists_spikes_noon(Matching_Idxs_Noon);
 end
 

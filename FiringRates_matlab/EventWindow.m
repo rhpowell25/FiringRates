@@ -36,7 +36,7 @@ step_size = Bin_Params.step_size; % Bins
 
 %% Times for rewarded trials
 
-[rewarded_gocue_time] = EventAlignmentTimes(xds, target_dir, target_center, 'trial_gocue');
+[rewarded_gocue_time] = EventAlignmentTimes(xds, target_dir, target_center, 'trial_goCue');
 [rewarded_end_time] = EventAlignmentTimes(xds, target_dir, target_center, 'trial_end');
 [Alignment_Times] = EventAlignmentTimes(xds, target_dir, target_center, event);
 
