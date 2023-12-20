@@ -1,4 +1,4 @@
-function Alignment_Scatter(xds_morn, xds_noon, unit_name, Save_Figs)
+function Alignment_Scatter(xds_morn, xds_noon, unit_name, Save_File)
 
 %% Build the array as long as each event
 events = strings;
@@ -119,8 +119,8 @@ scatter_fig.Position = [200 50 Plot_Params.fig_size Plot_Params.fig_size];
 hold on
 
 % Set the title
-fig_title = strcat(file_name, {' '}, '-', {' '}, unit_name);
-title(fig_title, 'FontSize', Plot_Params.title_font_size)
+Fig_Title = strcat(file_name, {' '}, '-', {' '}, unit_name);
+title(Fig_Title, 'FontSize', Plot_Params.title_font_size)
 
 % Label the axis
 xlabel('Morning Depth of Modulation (Hz)', 'FontSize', Plot_Params.label_font_size);
@@ -152,28 +152,8 @@ line([axis_min - axis_expansion, axis_max + axis_expansion], ...
 xlim([axis_min - axis_expansion, axis_max + axis_expansion])
 ylim([axis_min - axis_expansion, axis_max + axis_expansion])
 
-%% Define the save directory & save the figures
-if ~isequal(Save_Figs, 0)
-    save_dir = 'C:\Users\rhpow\Desktop\';
-    for ii = 1:length(findobj('type','figure'))
-        fig_title = strrep(fig_title, ':', '');
-        fig_title = strrep(fig_title, 'vs.', 'vs');
-        fig_title = strrep(fig_title, 'mg.', 'mg');
-        fig_title = strrep(fig_title, 'kg.', 'kg');
-        fig_title = strrep(fig_title, '.', '_');
-        fig_title = strrep(fig_title, '/', '_');
-        %title '';
-        if strcmp(Save_Figs, 'All')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'png')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'pdf')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'fig')
-        else
-            saveas(gcf, fullfile(save_dir, char(fig_title)), Save_Figs)
-        end
-        close gcf
-    end
-end
-
+%% Save the file if selected
+Save_Figs(Fig_Title, Save_File)
 
 
 

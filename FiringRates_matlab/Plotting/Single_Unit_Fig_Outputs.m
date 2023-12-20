@@ -250,7 +250,7 @@ for xx = 1:length(Dates)
     % Decide whether or not to plot (1 = Yes; 0 = No)
     Plot_Figs = 1;
     % Save the figures to desktop? ('pdf', 'png', 'fig', 0 = No)
-    Save_Figs = 'png';
+    Save_File = 'png';
 
     %% Loop through all units
     for jj = 1:length(unit_names)
@@ -259,14 +259,14 @@ for xx = 1:length(Dates)
     
         Unit_Summary(xds_morn, xds_noon, unit_names{jj}, 0)
 
-        fig_title = strcat(unit_names{jj}, {' '}, '(Unit_Summary)');
-        if ~strcmp(Save_Figs, 'All')
-            saveas(gcf, fullfile(trial_save_dir , char(fig_title)), Save_Figs)
+        Fig_Title = strcat(unit_names{jj}, {' '}, '(Unit_Summary)');
+        if ~strcmp(Save_File, 'All')
+            saveas(gcf, fullfile(trial_save_dir , char(Fig_Title)), Save_File)
         end
-        if strcmp(Save_Figs, 'All')
-            saveas(gcf, fullfile(trial_save_dir , fig_title), 'png')
-            saveas(gcf, fullfile(trial_save_dir , fig_title), 'pdf')
-            saveas(gcf, fullfile(trial_save_dir , fig_title), 'fig')
+        if strcmp(Save_File, 'All')
+            saveas(gcf, fullfile(trial_save_dir , Fig_Title), 'png')
+            saveas(gcf, fullfile(trial_save_dir , Fig_Title), 'pdf')
+            saveas(gcf, fullfile(trial_save_dir , Fig_Title), 'fig')
         end
         close gcf
 
@@ -274,16 +274,9 @@ for xx = 1:length(Dates)
     
         Trial_Summary(xds_morn, xds_noon, unit_names{jj}, 0)
 
-        fig_title = strcat(unit_names{jj}, {' '}, '(Trial_Summary)');
-        if ~strcmp(Save_Figs, 'All')
-            saveas(gcf, fullfile(trial_save_dir , char(fig_title)), Save_Figs)
-        end
-        if strcmp(Save_Figs, 'All')
-            saveas(gcf, fullfile(trial_save_dir , fig_title), 'png')
-            saveas(gcf, fullfile(trial_save_dir , fig_title), 'pdf')
-            saveas(gcf, fullfile(trial_save_dir , fig_title), 'fig')
-        end
-        close gcf
+        Fig_Title = strcat(unit_names{jj}, {' '}, '(Trial_Summary)');
+        % Save the file if selected
+        Save_Figs(Fig_Title, Save_File)
 
     end % End of unit loop
 

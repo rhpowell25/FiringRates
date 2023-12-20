@@ -1,4 +1,4 @@
-function OverlapMaxPlotFiringRates(xds_morn, xds_noon, unit_name, event, Save_Figs)
+function OverlapMaxPlotFiringRates(xds_morn, xds_noon, unit_name, event, Save_File)
 
 %% End the function if there is no Y-Limit
 
@@ -94,14 +94,14 @@ for ii = 1:length(avg_hists_spikes_morn)
 
     % Title
     if length(unique(target_centers_noon)) == 1
-        title(sprintf('Mean firing rate of %s: %i°', ... 
-            char(unit), target_dirs_morn(ii)), 'FontSize', Plot_Params.title_font_size)
+        Fig_Title = strcat('Mean firing rate of', {' '}, char(unit), ':', ...
+            {' '}, target_dirs_morn(ii), '°');
     end
     if length(unique(target_centers_noon)) > 1
-        title(sprintf('Mean firing rate of %s: %i°, target center at %0.1f', ... 
-            char(unit), target_dirs_morn(ii), target_centers_noon(ii)), ...
-            'FontSize', Plot_Params.title_font_size)
+        Fig_Title = strcat('Mean firing rate of', {' '}, char(unit), ':', ...
+            {' '}, target_dirs_morn(ii), '°, target center at', {' '}, target_centers_noon(ii));
     end
+    title(Fig_Title, 'FontSize', Plot_Params.title_font_size)
     
     % Axis Labels
     ylabel('Firing Rate (Hz)', 'FontSize', (Plot_Params.label_font_size - 5));
@@ -167,32 +167,10 @@ for ii = 1:length(avg_hists_spikes_morn)
     set(gca,'box','off')
     % Set The Font
     set(figure_axes,'FontName', Plot_Params.font_name);
- 
-end
 
-%% Define the save directory & save the figures
-if ~isequal(Save_Figs, 0)
-    save_dir = 'C:\Users\rhpow\Desktop\';
-    for ii = 1:length(findobj('type','figure'))
-        fig_info = get(gca,'title');
-        fig_title = get(fig_info, 'string');
-        fig_title = strrep(fig_title, ':', '');
-        fig_title = strrep(fig_title, 'vs.', 'vs');
-        fig_title = strrep(fig_title, 'mg.', 'mg');
-        fig_title = strrep(fig_title, 'kg.', 'kg');
-        fig_title = strrep(fig_title, '.', '_');
-        fig_title = strrep(fig_title, '/', '_');
-        title '';
-        if ~strcmp(Save_Figs, 'All')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), Save_Figs)
-        end
-        if strcmp(Save_Figs, 'All')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'png')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'pdf')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'fig')
-        end
-        close gcf
-    end
+    %% Save the file if selected
+    Save_Figs(Fig_Title, Save_File)
+ 
 end
 
 

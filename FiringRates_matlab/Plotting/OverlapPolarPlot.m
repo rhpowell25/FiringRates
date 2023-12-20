@@ -1,4 +1,4 @@
-function OverlapPolarPlot(xds_morn, xds_noon, unit_name, event, Save_Figs)
+function OverlapPolarPlot(xds_morn, xds_noon, unit_name, event, Save_File)
 
 %% End the function if there is no Y-Limit
 
@@ -228,13 +228,13 @@ for kk = 1:length(unique_targets_morn)
 
     % Set the title
     if length(unique_targets_morn) == 1
-        title(sprintf('Morning vs. Afternoon, %s', ...
-            char(unit)), 'FontSize', Plot_Params.title_font_size)
+        Fig_Title = strcat('Morning vs. Afternoon,', {' '}, char(unit));
     end
     if length(unique_targets_morn) > 1
-        title(sprintf('Morning vs. Afternoon, %s, TgtCenter: %0.1f', ...
-            char(unit), unique_targets_morn(kk)), 'FontSize', Plot_Params.title_font_size)
+        Fig_Title = strcat('Morning vs. Afternoon,', {' '}, char(unit), ...
+            ', TgtCenter at', {' '}, unique_targets_morn(kk));
     end
+    title(Fig_Title, 'FontSize', Plot_Params.title_font_size)
 
     % Only label every other tick
     figure_axes = gca;
@@ -250,30 +250,11 @@ for kk = 1:length(unique_targets_morn)
     % Set The Font
     set(figure_axes,'FontName', Plot_Params.font_name);
 
+    %% Save the file if selected
+    Save_Figs(Fig_Title, Save_File)
+
 end
 
-%% Define the save directory & save the figures
-if ~isequal(Save_Figs, 0)
-    save_dir = 'C:\Users\rhpow\Desktop\';
-    for ii = 1:length(findobj('type','figure'))
-        fig_info = get(gca,'title');
-        fig_title = get(fig_info, 'string');
-        fig_title = strrep(fig_title, ':', '');
-        fig_title = strrep(fig_title, 'vs.', 'vs');
-        fig_title = strrep(fig_title, 'mg.', 'mg');
-        fig_title = strrep(fig_title, 'kg.', 'kg');
-        fig_title = strrep(fig_title, '.', '_');
-        fig_title = strrep(fig_title, '/', '_');
-        title '';
-        if strcmp(Save_Figs, 'All')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'png')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'pdf')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'fig')
-        else
-            saveas(gcf, fullfile(save_dir, char(fig_title)), Save_Figs)
-        end
-        close gcf
-    end
-end
+
 
 

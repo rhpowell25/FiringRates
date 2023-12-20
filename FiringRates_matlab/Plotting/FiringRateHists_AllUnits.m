@@ -1,4 +1,4 @@
-function FiringRateHists_AllUnits(xds, event, Save_Figs)
+function FiringRateHists_AllUnits(xds, event, Save_File)
 
 %% Display the function being used
 disp('All Units Firing Rate Histogram Function:');
@@ -43,8 +43,9 @@ for jj = 1:num_dir
     end
 
     % Title
-    title(sprintf('Depth of Modulation, %0.f°, TgtCenter, %0.f', ... 
-        target_dirs(jj), target_centers(jj)), 'FontSize', Plot_Params.title_font_size)
+    Fig_Title = strcat('Depth of Modulation,', {' '}, target_dirs(jj), ...
+        '°, TgtCenter,', target_centers(jj));
+    title(Fig_Title, 'FontSize', Plot_Params.title_font_size)
         
     % Morning & Afternoon Baseline Firing Rates
     histogram(target_depth, 'binwidth', 2)
@@ -78,35 +79,11 @@ for jj = 1:num_dir
     % Set The Font
     set(figure_axes,'fontname', Plot_Params.font_name);
 
+    %% Save the file if selected
+    Save_Figs(Fig_Title, Save_File)
+
 end % End of target direction loop
 
-%% Figure Saving
-if ~isequal(Save_Figs, 0)
-    save_dir = 'C:\Users\rhpow\Desktop\';
-    for ii = 1:length(findobj('type','figure'))
-        fig_info = get(gca,'title');
-        fig_title = get(fig_info, 'string');
-        if isempty(fig_title)
-            fig_info = sgt;
-            fig_title = get(fig_info, 'string');
-        end
-        fig_title = strrep(fig_title, ':', '');
-        fig_title = strrep(fig_title, 'vs.', 'vs');
-        fig_title = strrep(fig_title, 'mg.', 'mg');
-        fig_title = strrep(fig_title, 'kg.', 'kg');
-        fig_title = strrep(fig_title, '.', '_');
-        fig_title = strrep(fig_title, '/', '_');
-        title '';
-        if strcmp(Save_Figs, 'All')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'png')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'pdf')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'fig')
-        else
-            saveas(gcf, fullfile(save_dir, char(fig_title)), Save_Figs)
-        end
-        close gcf
-    end
-end
 
 
 

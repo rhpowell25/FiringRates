@@ -1,4 +1,4 @@
-function PolarPlot(xds, unit_name, event, max_RLims, Save_Figs)
+function PolarPlot(xds, unit_name, event, max_RLims, Save_File)
 
 %% Display the function being used
 disp('Polar Plot Function:');
@@ -13,9 +13,8 @@ unit = xds.unit_names(N);
 [Plot_Params] = Plot_Parameters;
 r_axes_angle = 45;
 
-if ~isequal(Save_Figs, 0)
-    % Do you want a save title or blank title (1 = save_title, 0 = blank)
-    Fig_Save_Title = 0;
+if ~isequal(Save_File, 0)
+    close all
 end
 
 % Add the session information to the save title
@@ -213,8 +212,8 @@ for jj = 1:height(unique_targets)
     thetaticks(0:tick_step:315)
 
     % Titling the polar plot
-    title(sprintf('%s, TgtCenter At %0.1f', ...
-        char(unit), unique_targets(jj)), 'FontSize', Plot_Params.title_font_size)
+    Fig_Title = strcat(char(unit), ', TgtCenter At', {' '}, unique_targets(jj));
+    title(Fig_Title, 'FontSize', Plot_Params.title_font_size)
 
     % Only label every other tick
     figure_axes = gca;
@@ -230,33 +229,10 @@ for jj = 1:height(unique_targets)
     % Set The Font
     set(figure_axes,'fontname', Plot_Params.font_name);
 
-end
+    %% Save the file if selected
+    Fig_Title = strcat(Fig_Title, {' '}, session_save_title);
+    Save_Figs(Fig_Title, Save_File)
 
-%% Define the save directory & save the figure
-if ~isequal(Save_Figs, 0)
-    save_dir = 'C:\Users\rhpow\Desktop\';
-    for ii = 1:length(findobj('type','figure'))
-        fig_info = get(gca,'title');
-        fig_title = get(fig_info, 'string');
-        fig_title = strrep(fig_title, ':', '');
-        fig_title = strrep(fig_title, 'vs.', 'vs');
-        fig_title = strrep(fig_title, 'mg.', 'mg');
-        fig_title = strrep(fig_title, 'kg.', 'kg');
-        fig_title = strrep(fig_title, '.', '_');
-        fig_title = strrep(fig_title, '/', '_');
-        fig_title = strcat(fig_title, {' '}, session_save_title);
-        if isequal(Fig_Save_Title, 0)
-            title '';
-        end
-        if strcmp(Save_Figs, 'All')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'png')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'pdf')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'fig')
-        else
-            saveas(gcf, fullfile(save_dir, char(fig_title)), Save_Figs)
-        end
-        close gcf
-    end
 end
 
 
