@@ -22,12 +22,8 @@ end
 % How much do you want to expand the axis
 axis_expansion = 1;
 
-% Font specifications
-label_font_size = 18;
-title_font_size = 15;
-font_name = 'Arial';
-figure_width = 500;
-figure_height = 500;
+% Font & plotting specifications
+[Plot_Params] = Plot_Parameters;
         
 %% Indexes for rewarded trials in all directions
 % Counts the number of directions used
@@ -37,7 +33,7 @@ num_dir = length(target_dirs);
 for jj = 1:num_dir
 
     hist_figure = figure;
-    hist_figure.Position = [250 250 figure_width figure_height];
+    hist_figure.Position = [250 250 Plot_Params.fig_size Plot_Params.fig_size];
     hold on
 
     % Seperate out the firing rates
@@ -48,7 +44,7 @@ for jj = 1:num_dir
 
     % Title
     title(sprintf('Depth of Modulation, %0.f°, TgtCenter, %0.f', ... 
-        target_dirs(jj), target_centers(jj)), 'FontSize', title_font_size)
+        target_dirs(jj), target_centers(jj)), 'FontSize', Plot_Params.title_font_size)
         
     % Morning & Afternoon Baseline Firing Rates
     histogram(target_depth, 'binwidth', 2)
@@ -61,8 +57,8 @@ for jj = 1:num_dir
         'LineStyle','--', 'Color', 'k', 'LineWidth', 2)
 
     % Labels
-    xlabel('Depth of Modulation (Hz)', 'FontSize', label_font_size)
-    ylabel('Units', 'FontSize', label_font_size)
+    xlabel('Depth of Modulation (Hz)', 'FontSize', Plot_Params.label_font_size)
+    ylabel('Units', 'FontSize', Plot_Params.label_font_size)
 
     % Reset the axis limits
     ylim([y_limits(1),y_limits(2) + axis_expansion])
@@ -80,7 +76,7 @@ for jj = 1:num_dir
     % Remove the top and right tick marks
     set(figure_axes,'box','off');
     % Set The Font
-    set(figure_axes,'fontname', font_name);
+    set(figure_axes,'fontname', Plot_Params.font_name);
 
 end % End of target direction loop
 

@@ -53,15 +53,8 @@ elseif contains(event, 'end')
     time_before_end = xds_morn.meta.TgtHold;
 end
 
-% Font & figure specifications
-label_font_size = 20;
-title_font_size = 15;
-plot_line_size = 3;
-axes_line_size = 1.5;
-legend_font_size = 12;
-font_name = 'Arial';
-figure_width = 750;
-figure_height = 250;
+% Font & plotting specifications
+[Plot_Params] = Plot_Parameters;
 
 %% X-axis
 spike_time = (-before_event:bin_size:after_event);
@@ -87,29 +80,32 @@ end
 for ii = 1:length(avg_hists_spikes_morn)
 
     Firing_Rate_figure = figure;
-    Firing_Rate_figure.Position = [300 300 figure_width figure_height];
+    Firing_Rate_figure.Position = [300 300 Plot_Params.fig_size Plot_Params.fig_size / 2];
     hold on
 
     % Morning
-    morn_line = plot(spike_time, avg_hists_spikes_morn{ii}, 'LineWidth', plot_line_size, 'Color', [0.9290, 0.6940, 0.1250]);
+    morn_line = plot(spike_time, avg_hists_spikes_morn{ii}, ...
+        'LineWidth', Plot_Params.mean_line_width, 'Color', [0.9290, 0.6940, 0.1250]);
     % Afternoon
-    noon_line = plot(spike_time, avg_hists_spikes_noon{ii}, 'LineWidth', plot_line_size, 'Color', [.5 0 .5]);
+    noon_line = plot(spike_time, avg_hists_spikes_noon{ii}, ...
+        'LineWidth', Plot_Params.mean_line_width, 'Color', [.5 0 .5]);
     
     %% Set the title, labels, axes, & plot lines indicating alignment
 
     % Title
     if length(unique(target_centers_noon)) == 1
         title(sprintf('Mean firing rate of %s: %i°', ... 
-            char(unit), target_dirs_morn(ii)), 'FontSize', title_font_size)
+            char(unit), target_dirs_morn(ii)), 'FontSize', Plot_Params.title_font_size)
     end
     if length(unique(target_centers_noon)) > 1
         title(sprintf('Mean firing rate of %s: %i°, target center at %0.1f', ... 
-            char(unit), target_dirs_morn(ii), target_centers_noon(ii)), 'FontSize', title_font_size)
+            char(unit), target_dirs_morn(ii), target_centers_noon(ii)), ...
+            'FontSize', Plot_Params.title_font_size)
     end
     
     % Axis Labels
-    ylabel('Firing Rate (Hz)', 'FontSize', (label_font_size - 5));
-    xlabel('Time (sec.)', 'FontSize', label_font_size);
+    ylabel('Firing Rate (Hz)', 'FontSize', (Plot_Params.label_font_size - 5));
+    xlabel('Time (sec.)', 'FontSize', Plot_Params.label_font_size);
 
     % Setting the x-axis limits
     if contains(event, 'gocue')
@@ -126,38 +122,39 @@ for ii = 1:length(avg_hists_spikes_morn)
     if contains(event, 'gocue')
         % Solid dark green line indicating the aligned time
         line([0, 0], [ylims(1), ylims(2)], ...
-            'LineWidth', plot_line_size, 'Color', [0 0.5 0]);
+            'LineWidth', Plot_Params.mean_line_width, 'Color', [0 0.5 0]);
         % Dotted dark green line indicating beginning of measured window
         line([-time_before_gocue, -time_before_gocue], [ylims(1), ylims(2)], ...
-            'LineWidth', plot_line_size, 'Color', [0 0.5 0], 'LineStyle','--');
+            'LineWidth', Plot_Params.mean_line_width, 'Color', [0 0.5 0], 'LineStyle','--');
     elseif contains(event, 'end')
         % Solid red line indicating the aligned time
         line([0, 0], [ylims(1), ylims(2)], ...
-            'LineWidth', plot_line_size, 'color', 'r');
+            'LineWidth', Plot_Params.mean_line_width, 'color', 'r');
         % Dotted red line indicating beginning of measured window
         line([-time_before_end, -time_before_end], [ylims(1), ylims(2)], ...
-            'LineWidth', plot_line_size, 'color','r','linestyle','--');
+            'LineWidth', Plot_Params.mean_line_width, 'color','r','linestyle','--');
     end
 
     if ~contains(event, 'window')
         if ~contains(event, 'trial_gocue') && ~contains(event, 'trial_end')
             % Dotted red line indicating beginning of measured window
             line([-0.1, -0.1], [ylims(1), ylims(2)], ...
-                'Linewidth', plot_line_size, 'Color', 'r', 'Linestyle','--');
+                'Linewidth', Plot_Params.mean_line_width, 'Color', 'r', 'Linestyle','--');
             % Dotted red line indicating end of measured window
             line([0.1, 0.1], [ylims(1), ylims(2)], ...
-                'Linewidth', plot_line_size, 'Color', 'r', 'Linestyle','--');
+                'Linewidth', Plot_Params.mean_line_width, 'Color', 'r', 'Linestyle','--');
         end
     end
 
     % Legend
-    legend([morn_line noon_line], {'Morning', 'Afternoon'}, 'Location', 'NorthEast', 'FontSize', legend_font_size);
+    legend([morn_line noon_line], {'Morning', 'Afternoon'}, 'Location', 'NorthEast', ...
+        'FontSize', Plot_Params.legend_size);
     % Remove the legend's outline
     legend boxoff
 
     % Only label every other tick
     figure_axes = gca;
-    figure_axes.LineWidth = axes_line_size;
+    figure_axes.LineWidth = Plot_Params.axes_line_width;
     x_labels = string(figure_axes.XAxis.TickLabels);
     y_labels = string(figure_axes.YAxis.TickLabels);
     x_labels(2:2:end) = NaN;
@@ -169,7 +166,7 @@ for ii = 1:length(avg_hists_spikes_morn)
     % Remove the top and right tick marks
     set(gca,'box','off')
     % Set The Font
-    set(figure_axes,'FontName', font_name);
+    set(figure_axes,'FontName', Plot_Params.font_name);
  
 end
 

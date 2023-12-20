@@ -9,13 +9,9 @@ unit = xds.unit_names(N);
 
 %% Some variable extraction & definitions
 
-% Font & axis specifications
-title_font_size = 15;
-plot_line_size = 3;
-axes_font_size = 20;
+% Font & plotting specifications
+[Plot_Params] = Plot_Parameters;
 r_axes_angle = 45;
-axes_line_size = 5;
-font_name = 'Arial';
 
 if ~isequal(Save_Figs, 0)
     % Do you want a save title or blank title (1 = save_title, 0 = blank)
@@ -113,56 +109,58 @@ for jj = 1:height(unique_targets)
     % Plot the standard error of the baseline firing rate in light green
     if isequal(length(bs_fr), length(mp_fr))
         polarscatter(deg2rad(target_dirs_idx(:,jj)), pos_std_bs(:,jj), sz, ... 
-            'MarkerEdgeColor', [0.4660, 0.6740, 0.1880], 'Marker',errmrk, 'LineWidth', plot_line_size)
+            'MarkerEdgeColor', [0.4660, 0.6740, 0.1880], 'Marker',errmrk, ....
+            'LineWidth', Plot_Params.mean_line_with)
         hold on
         polarscatter(deg2rad(target_dirs_idx(:,jj)), neg_std_bs(:,jj), sz, ... 
-            'MarkerEdgeColor', [0.4660, 0.6740, 0.1880], 'Marker',errmrk, 'LineWidth', plot_line_size)
+            'MarkerEdgeColor', [0.4660, 0.6740, 0.1880], 'Marker',errmrk, ...
+            'LineWidth', Plot_Params.mean_line_with)
     else
-        polarplot((deg2rad(target_dirs_bs_idx)), pos_std_bs, 'LineWidth', plot_line_size, ...
+        polarplot((deg2rad(target_dirs_bs_idx)), pos_std_bs, 'LineWidth', Plot_Params.mean_line_with, ...
             'LineStyle', '--', 'Color', [0.4660, 0.6740, 0.1880])
         hold on
-        polarplot((deg2rad(target_dirs_bs_idx)), neg_std_bs, 'LineWidth', plot_line_size, ...
+        polarplot((deg2rad(target_dirs_bs_idx)), neg_std_bs, 'LineWidth', Plot_Params.mean_line_with, ...
             'LineStyle', '--', 'Color', [0.4660, 0.6740, 0.1880])
     end
 
     % Plot the standard error of the movement phase firing rate in red
     polarscatter(deg2rad(target_dirs_idx(:,jj)), pos_std_mp(:,jj), sz, ... 
-        'MarkerEdgeColor', [0.6350, 0.0780, 0.1840], 'Marker',errmrk, 'LineWidth', plot_line_size)
+        'MarkerEdgeColor', [0.6350, 0.0780, 0.1840], 'Marker',errmrk, 'LineWidth', Plot_Params.mean_line_with)
     polarscatter(deg2rad(target_dirs_idx(:,jj)), neg_std_mp(:,jj), sz, ... 
-        'MarkerEdgeColor', [0.6350, 0.0780, 0.1840], 'Marker',errmrk, 'LineWidth', plot_line_size)
+        'MarkerEdgeColor', [0.6350, 0.0780, 0.1840], 'Marker',errmrk, 'LineWidth', Plot_Params.mean_line_with)
 
     %% Connect the error bars if 1-dimensional
 
     if height(unique(target_dirs)) == 2 && ~isequal(unique(abs(target_dirs)), 90)
         % Plot the movement phase firing rate in red
         polarplot([0,0], [pos_std_mp(1,jj); neg_std_mp(1,jj)], ...
-            'LineWidth', plot_line_size, 'color', [0.6350, 0.0780, 0.1840]);
+            'LineWidth', Plot_Params.mean_line_with, 'color', [0.6350, 0.0780, 0.1840]);
         polarscatter(0, mp_fr_idx(1,jj), sz, [0.6350, 0.0780, 0.1840], 'Marker','.')
         polarplot([pi,pi], [pos_std_mp(2,jj); neg_std_mp(2,jj)], ...
-            'LineWidth', plot_line_size, 'color', [0.6350, 0.0780, 0.1840]);
+            'LineWidth', Plot_Params.mean_line_with, 'color', [0.6350, 0.0780, 0.1840]);
         polarscatter(pi, mp_fr_idx(2,jj), sz, [0.6350, 0.0780, 0.1840], 'Marker','.')
         % Plot the baseline firing rate in light green
         polarplot([0,0], [pos_std_bs(1,jj); neg_std_bs(1,jj)], ...
-            'LineWidth', plot_line_size, 'color', [0.4660, 0.6740, 0.1880]);
+            'LineWidth', Plot_Params.mean_line_with, 'color', [0.4660, 0.6740, 0.1880]);
         polarscatter(0, bs_fr_idx(1), sz, [0.4660, 0.6740, 0.1880], 'Marker','.')
         polarplot([pi,pi], [pos_std_bs(2,jj); neg_std_bs(2,jj)], ...
-            'LineWidth', plot_line_size, 'color', [0.4660, 0.6740, 0.1880]);
+            'LineWidth', Plot_Params.mean_line_with, 'color', [0.4660, 0.6740, 0.1880]);
         polarscatter(pi, bs_fr_idx(2), sz, [0.4660, 0.6740, 0.1880], 'Marker','.')
     end
 
     if height(unique(target_dirs)) == 2 && isequal(unique(abs(target_dirs)), 90)
         % Plot the movement phase firing rate in dark red
         polarplot([deg2rad(target_dirs_idx(1)),deg2rad(target_dirs_idx(1))], [pos_std_mp(1,jj); neg_std_mp(1,jj)], ...
-            'LineWidth', plot_line_size, 'color', [0.6350, 0.0780, 0.1840]);
+            'LineWidth', Plot_Params.mean_line_with, 'color', [0.6350, 0.0780, 0.1840]);
         polarplot([deg2rad(target_dirs_idx(2)),deg2rad(target_dirs_idx(2))], [pos_std_mp(2,jj); neg_std_mp(2,jj)], ...
-            'LineWidth', plot_line_size, 'color', [0.6350, 0.0780, 0.1840]);
+            'LineWidth', Plot_Params.mean_line_with, 'color', [0.6350, 0.0780, 0.1840]);
         polarscatter(deg2rad(target_dirs_idx(1)), mp_fr_idx(1,jj), sz, [0.6350, 0.0780, 0.1840], 'Marker','.')
         polarscatter(deg2rad(target_dirs_idx(2)), mp_fr_idx(2,jj), sz, [0.6350, 0.0780, 0.1840], 'Marker','.')
         %Plot the baseline firing rate in light green
         polarplot([deg2rad(target_dirs_idx(1)),deg2rad(target_dirs_idx(1))], [pos_std_bs(1,jj); neg_std_bs(1,jj)], ...
-            'LineWidth', plot_line_size, 'color', [0.4660, 0.6740, 0.1880]);
+            'LineWidth', Plot_Params.mean_line_with, 'color', [0.4660, 0.6740, 0.1880]);
         polarplot([deg2rad(target_dirs_idx(2)),deg2rad(target_dirs_idx(2))], [pos_std_bs(2,jj); neg_std_bs(2,jj)], ...
-            'LineWidth', plot_line_size, 'color', [0.4660, 0.6740, 0.1880]);
+            'LineWidth', Plot_Params.mean_line_with, 'color', [0.4660, 0.6740, 0.1880]);
         polarscatter(deg2rad(target_dirs_idx(1)), bs_fr_idx(1,jj), sz, [0.4660, 0.6740, 0.1880], 'Marker','.')
         polarscatter(deg2rad(target_dirs_idx(2)), bs_fr_idx(2,jj), sz, [0.4660, 0.6740, 0.1880], 'Marker','.')
     end
@@ -170,12 +168,12 @@ for jj = 1:height(unique_targets)
     if height(unique(target_dirs)) == 1
         % Plot the movement phase firing rate in dark red
         polarplot([deg2rad(target_dirs_idx(1)),deg2rad(target_dirs_idx(1))], [pos_std_mp(1,jj); neg_std_mp(1,jj)], ...
-            'LineWidth', plot_line_size, 'color', [0.6350, 0.0780, 0.1840]);
+            'LineWidth', Plot_Params.mean_line_with, 'color', [0.6350, 0.0780, 0.1840]);
         polarscatter(deg2rad(target_dirs_idx(1)), mp_fr_idx(1,jj), sz, [0.6350, 0.0780, 0.1840], 'Marker','.')
         % Plot the baseline firing rate in light green
         if isequal(length(bs_fr), length(mp_fr))
             polarplot([deg2rad(target_dirs_idx(1)),deg2rad(target_dirs_idx(1))], [pos_std_bs(1,jj); neg_std_bs(1,jj)], ...
-                'LineWidth', plot_line_size, 'color', [0.4660, 0.6740, 0.1880]);
+                'LineWidth', Plot_Params.mean_line_with, 'color', [0.4660, 0.6740, 0.1880]);
             polarscatter(deg2rad(target_dirs_idx(1)), bs_fr_idx(1,jj), sz, [0.4660, 0.6740, 0.1880], 'Marker','.')
         end
     end
@@ -185,17 +183,18 @@ for jj = 1:height(unique_targets)
     if height(unique(target_dirs)) > 2
         % Plot the movement phase firing rate in dark red
         polarplot(deg2rad(target_dirs_idx(:,jj)), mp_fr_idx(:,jj), ...
-            'LineWidth', plot_line_size, 'Color', [0.6350, 0.0780, 0.1840])
+            'LineWidth', Plot_Params.mean_line_with, 'Color', [0.6350, 0.0780, 0.1840])
         % Plot the baseline firing rate in light green
         if isequal(length(bs_fr), length(mp_fr))
             polarplot(deg2rad(target_dirs_idx(:,jj)), bs_fr_idx(:,jj), ... 
-                'LineWidth', plot_line_size, 'Color', [0.4660, 0.6740, 0.1880])
+                'LineWidth', Plot_Params.mean_line_with, 'Color', [0.4660, 0.6740, 0.1880])
         end
     end
 
     if ~isequal(length(bs_fr), length(mp_fr))
         % Plot the baseline firing rate in light green
-        polarplot(deg2rad(target_dirs_bs_idx), bs_fr_idx, 'LineWidth', plot_line_size, 'Color', [0.4660, 0.6740, 0.1880])
+        polarplot(deg2rad(target_dirs_bs_idx), bs_fr_idx, ...
+            'LineWidth', Plot_Params.mean_line_with, 'Color', [0.4660, 0.6740, 0.1880])
     end
     
     % Set the axis limit
@@ -215,7 +214,7 @@ for jj = 1:height(unique_targets)
 
     % Titling the polar plot
     title(sprintf('%s, TgtCenter At %0.1f', ...
-        char(unit), unique_targets(jj)), 'FontSize', title_font_size)
+        char(unit), unique_targets(jj)), 'FontSize', Plot_Params.title_font_size)
 
     % Only label every other tick
     figure_axes = gca;
@@ -223,13 +222,13 @@ for jj = 1:height(unique_targets)
     figure_axes.FontWeight = 'Bold';
     figure_axes.RColor = 'k';
     figure_axes.ThetaColor = 'k';
-    figure_axes.LineWidth = axes_line_size;
-    figure_axes.FontSize = axes_font_size;
+    figure_axes.LineWidth = Plot_Params.axis_line_width;
+    figure_axes.FontSize = Plot_Params.axis_font_size;
     r_labels = string(figure_axes.RAxis.TickLabels);
     r_labels(2:2:end) = NaN;
     figure_axes.RAxis.TickLabels = r_labels;
     % Set The Font
-    set(figure_axes,'fontname', font_name);
+    set(figure_axes,'fontname', Plot_Params.font_name);
 
 end
 

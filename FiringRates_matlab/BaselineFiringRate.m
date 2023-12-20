@@ -1,4 +1,4 @@
-function [bs_fr, std_bs, err_bs, all_trials_bs_fr] = BaselineFiringRate(xds, unit_name)
+function [bs_fr, std_bs, err_bs, pertrial_bsfr] = BaselineFiringRate(xds, unit_name)
 
 %% Find the unit of interest
 [N] = Find_Unit(xds, unit_name);
@@ -9,7 +9,7 @@ if isempty(N)
     bs_fr = NaN;
     std_bs = NaN;
     err_bs = NaN;
-    all_trials_bs_fr = NaN;
+    pertrial_bsfr = NaN;
     return
 end
 
@@ -46,30 +46,30 @@ for jj = 1:num_dirs
         bs_fr = zeros(num_dirs, 1);
         std_bs = zeros(num_dirs, 1);
         err_bs = zeros(num_dirs, 1);
-        all_trials_bs_fr = struct([]);
+        pertrial_bsfr = struct([]);
     elseif jj == 1 && ~isequal(per_dir_bsfr, 1)
         bs_fr = zeros(1, 1);
         std_bs = zeros(1, 1);
         err_bs = zeros(1, 1);
-        all_trials_bs_fr = struct([]);
+        pertrial_bsfr = struct([]);
     end 
 
     %% Baseline Firing Rate
     for ii = 1:length(rewarded_gocue_time)
         t_start = rewarded_gocue_time(ii) - time_before_gocue;
         t_end = rewarded_gocue_time(ii);
-        all_trials_bs_fr{jj,1}(ii,1) = length(find((spikes >+ t_start) & ...
+        pertrial_bsfr{jj,1}(ii,1) = length(find((spikes >+ t_start) & ...
                 (spikes <= t_end))) / (time_before_gocue);
     end
         
     %% Defining the output variables
 
     % Baseline firing rate
-    bs_fr(jj,1) = mean(all_trials_bs_fr{jj,1});
+    bs_fr(jj,1) = mean(pertrial_bsfr{jj,1});
     % Standard Deviation
-    std_bs(jj,1) = std(all_trials_bs_fr{jj,1});
+    std_bs(jj,1) = std(pertrial_bsfr{jj,1});
     % Standard Error
-    err_bs(jj,1) = std_bs(jj,1) / sqrt(length(all_trials_bs_fr{jj,1}));
+    err_bs(jj,1) = std_bs(jj,1) / sqrt(length(pertrial_bsfr{jj,1}));
 
     % End the function after one loop if using all targets
     if isequal(per_dir_bsfr, 0)

@@ -1,4 +1,4 @@
-function [EMG_Names, peak_to_noise_ratio] = Spike_Trigger_Avg(xds, unit_name, pref_dir, Plot_Figs, Save_Figs)
+function [EMG_Names, peak_to_noise_ratio] = Spike_Trigger_Avg(xds, unit_name, pref_dir, Plot_Figs, Save_File)
 
 %% Display the function being used
 disp('Spike Trigger Average Function:');
@@ -37,16 +37,11 @@ post_spike_idx = post_spike_time / (bin_width/2);
 % Length of the measured period
 absolute_EMG_timing = linspace(-pre_spike_time, post_spike_time, (pre_spike_idx + post_spike_idx + 1));
 
-% Font & figure specifications
-label_font_size = 15;
-legend_font_size = 12;
-title_font_size = 15;
-font_name = 'Arial';
-figure_width = 750;
-figure_height = 250;
+% Font & plotting specifications
+[Plot_Params] = Plot_Parameters;
 
 % Close all previously open figures if you're saving 
-if ~isequal(Save_Figs, 0)
+if ~isequal(Save_File, 0)
     close all
 end
 
@@ -147,18 +142,18 @@ for mm = 1:length(M)
     if isequal(Plot_Figs, 1)
 
         raw_EMG_figure = figure;
-        raw_EMG_figure.Position = [300 300 figure_width figure_height];
+        raw_EMG_figure.Position = [300 300 Plot_Params.fig_size Plot_Params.fig_size / 2];
         hold on
 
         plot(absolute_EMG_timing, avg_rect_EMG, 'k', 'LineWidth', 2);
 
         % Titling the plot
-        title(sprintf('%s Spike-Trig Avg, %i°', ...
-            char(xds.unit_names(N)), pref_dir), 'FontSize', title_font_size)
+        Fig_Title = strcat(char(xds.unit_names(N)), {' '}, 'Spike-Trig Avg,', {' '},  pref_dir);
+        title(Fig_Title, 'FontSize', Plot_Params.title_font_size)
 
         % Set the labels
-        ylabel('Rectified EMG', 'FontSize', label_font_size);
-        xlabel('Time (sec.)', 'FontSize', label_font_size);
+        ylabel('Rectified EMG', 'FontSize', Plot_Params.label_font_size);
+        xlabel('Time (sec.)', 'FontSize', Plot_Params.label_font_size);
 
         % Plot the baseline noise as dark green dots
         for ii = 1:length(baseline_noise_idx)
@@ -179,41 +174,21 @@ for mm = 1:length(M)
         ann_legend = annotation('textbox', legend_dims, 'String', legend_string, ... 
             'FitBoxToText', 'on', 'verticalalignment', 'top', ... 
             'EdgeColor','none', 'horizontalalignment', 'center');
-        ann_legend.FontSize = legend_font_size;
-        ann_legend.FontName = font_name;
+        ann_legend.FontSize = Plot_Params.legend_size;
+        ann_legend.FontName = Plot_Params.font_name;
 
         % Set the legend
         legend(sprintf('%s', EMG_Names(mm)), ... 
-            'NumColumns', 1, 'FontSize', legend_font_size, 'FontName', font_name, ...
+            'NumColumns', 1, 'FontSize', Plot_Params.legend_size, 'FontName', Plot_Params.font_name, ...
             'Location', 'NorthEast');
         
         % Remove the box of the legend
         legend boxoff
 
+        %% Save the file if selected
+        Save_File(Fig_Title, Save_File)
+
     end % End of the Plot_Figs loop
 
 end % End of EMG loop
 
-%% Define the save directory & save the figures
-if ~isequal(Save_Figs, 0)
-    save_dir = 'C:\Users\rhpow\Desktop\';
-    for ii = 1:numel(findobj('type','figure'))
-        fig_info = get(gca,'title');
-        save_title = get(fig_info, 'string');
-        save_title = strrep(save_title, ':', '');
-        save_title = strrep(save_title, 'vs.', 'vs');
-        save_title = strrep(save_title, 'mg.', 'mg');
-        save_title = strrep(save_title, 'kg.', 'kg');
-        save_title = strrep(save_title, '.', '_');
-        save_title = strrep(save_title, '/', '_');
-        if ~strcmp(Save_Figs, 'All')
-            saveas(gcf, fullfile(save_dir, char(save_title)), Save_Figs)
-        end
-        if strcmp(Save_Figs, 'All')
-            saveas(gcf, fullfile(save_dir, char(save_title)), 'png')
-            saveas(gcf, fullfile(save_dir, char(save_title)), 'pdf')
-            saveas(gcf, fullfile(save_dir, char(save_title)), 'fig')
-        end
-        close gcf
-    end
-end

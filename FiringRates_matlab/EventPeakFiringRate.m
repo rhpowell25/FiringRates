@@ -1,4 +1,4 @@
-function [mp_fr, std_mp, pertrial_mpfr] = ...
+function [mp_fr, std_mp, err_mp, pertrial_mpfr] = ...
     EventPeakFiringRate(xds, unit_name, event)
 
 %% Find the unit of interest
@@ -9,6 +9,7 @@ if isempty(N)
     fprintf('%s does not exist \n', unit_name);
     mp_fr = NaN;
     std_mp = NaN;
+    err_mp = NaN;
     pertrial_mpfr = NaN;
     return
 end
@@ -47,6 +48,7 @@ for jj = 1:num_dir
     if jj == 1
         mp_fr = zeros(num_dir, 1);
         std_mp = zeros(num_dir, 1);
+        err_mp = zeros(num_dir, 1);
         pertrial_mpfr = struct([]);
     end
 
@@ -64,6 +66,8 @@ for jj = 1:num_dir
     mp_fr(jj,1) = mean(pertrial_mpfr{jj,1});
     % Standard Deviation
     std_mp(jj,1) = std(pertrial_mpfr{jj,1});
+    % Standard Error
+    err_mp(jj,1) = std_mp(jj,1) / sqrt(length(pertrial_mpfr{jj,1}));
     
 end % End of target loop
 

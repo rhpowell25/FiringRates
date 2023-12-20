@@ -24,13 +24,8 @@ unit = xds_morn.unit_names(N);
 % How much do you want to expand the axis
 axis_expansion = 6;
 
-% Font specifications
-label_font_size = 18;
-title_font_size = 15;
-legend_font_size = 15;
-font_name = 'Arial';
-figure_width = 500;
-figure_height = 500;
+% Font & plotting specifications
+[Plot_Params] = Plot_Parameters;
 legend_dims = [0.425 0.35 0.44 0.44];
         
 %% Check to see if both sessions use a consistent number of targets
@@ -58,12 +53,13 @@ if strcmp(fr_phase, 'Peak') || strcmp(fr_phase, 'Both')
     for jj = 1:num_dir
     
         hist_figure = figure;
-        hist_figure.Position = [250 250 figure_width figure_height];
+        hist_figure.Position = [250 250 Plot_Params.fig_size Plot_Params.fig_size];
         hold on
     
         % Title
         title(sprintf('Peak Firing Rates, %0.f°, TgtCenter, %0.f - %s', ... 
-            target_dirs_morn(jj), target_centers_morn(jj), char(unit)), 'FontSize', title_font_size)
+            target_dirs_morn(jj), target_centers_morn(jj), char(unit)), ...
+            'FontSize', Plot_Params.title_font_size)
             
         % Morning & Afternoon Baseline Firing Rates
         histogram(mpfr_morn{jj}, 'EdgeColor', 'k', 'FaceColor', [0.9290, 0.6940, 0.1250])
@@ -80,8 +76,8 @@ if strcmp(fr_phase, 'Peak') || strcmp(fr_phase, 'Both')
             'LineStyle','--', 'Color', [.5 0 .5], 'LineWidth', 2)
     
         % Labels
-        xlabel('Peak Firing Rates (Hz)', 'FontSize', label_font_size)
-        ylabel('Succesful Trials', 'FontSize', label_font_size)
+        xlabel('Peak Firing Rates (Hz)', 'FontSize', Plot_Params.label_font_size)
+        ylabel('Succesful Trials', 'FontSize', Plot_Params.label_font_size)
     
         % Peak firing rate statistics (Unpaired T-Test)
         [~, mpfr_p_val] = ttest2(mpfr_morn{jj}, mpfr_noon{jj});
@@ -92,16 +88,16 @@ if strcmp(fr_phase, 'Peak') || strcmp(fr_phase, 'Both')
                 strcat('p =', {' '}, mat2str(round(mpfr_p_val, 3))), ... 
                 'FitBoxToText', 'on', 'verticalalignment', 'top', ...
                 'EdgeColor','none', 'horizontalalignment', 'right');
-            ann_legend.FontSize = legend_font_size;
-            ann_legend.FontName = font_name;
+            ann_legend.FontSize = Plot_Params.legend_size;
+            ann_legend.FontName = Plot_Params.font_name;
         end
         if isequal(round(mpfr_p_val, 3), 0)
             ann_legend = annotation('textbox', legend_dims, 'String', ... 
                 strcat('p <', {' '}, '0.001'), ... 
                 'FitBoxToText', 'on', 'verticalalignment', 'top', ...
                 'EdgeColor','none', 'horizontalalignment', 'right');
-            ann_legend.FontSize = legend_font_size;
-            ann_legend.FontName = font_name;
+            ann_legend.FontSize = Plot_Params.legend_size;
+            ann_legend.FontName = Plot_Params.font_name;
         end
     
         % Plot dummy points for the legend
@@ -109,7 +105,7 @@ if strcmp(fr_phase, 'Peak') || strcmp(fr_phase, 'Both')
         dummy_purple = scatter(-1.5, -1.5, 's', 'filled', 'Color', [.5 0 .5]);
         % Legend
         legend([dummy_yellow, dummy_purple], ... 
-            {'Morning', 'Afternoon'}, 'Location', 'northeast', 'FontSize', legend_font_size)
+            {'Morning', 'Afternoon'}, 'Location', 'northeast', 'FontSize', Plot_Params.legend_size)
         % Remove the legend's outline
         legend boxoff
     
@@ -130,7 +126,7 @@ if strcmp(fr_phase, 'Peak') || strcmp(fr_phase, 'Both')
         % Remove the top and right tick marks
         set(figure_axes,'box','off');
         % Set The Font
-        set(figure_axes,'fontname', font_name);
+        set(figure_axes,'fontname', Plot_Params.font_name);
     
     end % End of target direction loop
 else
@@ -141,11 +137,11 @@ end
 if strcmp(fr_phase, 'Baseline') || strcmp(fr_phase, 'Both')
 
     hist_figure = figure;
-    hist_figure.Position = [250 250 figure_width figure_height];
+    hist_figure.Position = [250 250 Plot_Params.fig_size Plot_Params.fig_size];
     hold on
 
     % Title
-    title(sprintf('Baseline Firing Rates, %s', char(unit)), 'FontSize', title_font_size)
+    title(sprintf('Baseline Firing Rates, %s', char(unit)), 'FontSize', Plot_Params.title_font_size)
         
     % Morning & Afternoon Baseline Firing Rates
     histogram(bsfr_morn{1}, 'EdgeColor', 'k', 'FaceColor', [0.9290, 0.6940, 0.1250])
@@ -162,8 +158,8 @@ if strcmp(fr_phase, 'Baseline') || strcmp(fr_phase, 'Both')
         'LineStyle','--', 'Color', [.5 0 .5], 'LineWidth', 2)
 
     % Labels
-    xlabel('Baseline Firing Rates (Hz)', 'FontSize', label_font_size)
-    ylabel('Succesful Trials', 'FontSize', label_font_size)
+    xlabel('Baseline Firing Rates (Hz)', 'FontSize', Plot_Params.label_font_size)
+    ylabel('Succesful Trials', 'FontSize', Plot_Params.label_font_size)
 
     % Peak firing rate statistics (Unpaired T-Test)
     [~, bsfr_p_val] = ttest2(bsfr_morn{1}, bsfr_noon{1});
@@ -174,16 +170,16 @@ if strcmp(fr_phase, 'Baseline') || strcmp(fr_phase, 'Both')
             strcat('p =', {' '}, mat2str(round(bsfr_p_val, 3))), ... 
             'FitBoxToText', 'on', 'verticalalignment', 'top', ...
             'EdgeColor','none', 'horizontalalignment', 'right');
-        ann_legend.FontSize = legend_font_size;
-        ann_legend.FontName = font_name;
+        ann_legend.FontSize = Plot_Params.legend_size;
+        ann_legend.FontName = Plot_Params.font_name;
     end
     if isequal(round(bsfr_p_val, 3), 0)
         ann_legend = annotation('textbox', legend_dims, 'String', ... 
             strcat('p <', {' '}, '0.001'), ... 
             'FitBoxToText', 'on', 'verticalalignment', 'top', ...
             'EdgeColor','none', 'horizontalalignment', 'right');
-        ann_legend.FontSize = legend_font_size;
-        ann_legend.FontName = font_name;
+        ann_legend.FontSize = Plot_Params.legend_size;
+        ann_legend.FontName = Plot_Params.font_name;
     end
 
     % Plot dummy points for the legend
@@ -191,7 +187,7 @@ if strcmp(fr_phase, 'Baseline') || strcmp(fr_phase, 'Both')
     dummy_purple = scatter(-1.5, -1.5, 's', 'filled', 'Color', [.5 0 .5]);
     % Legend
     legend([dummy_yellow, dummy_purple], ... 
-        {'Morning', 'Afternoon'}, 'Location', 'northeast', 'FontSize', legend_font_size)
+        {'Morning', 'Afternoon'}, 'Location', 'northeast', 'FontSize', Plot_Params.legend_size)
     % Remove the legend's outline
     legend boxoff
 
@@ -212,7 +208,7 @@ if strcmp(fr_phase, 'Baseline') || strcmp(fr_phase, 'Both')
     % Remove the top and right tick marks
     set(figure_axes,'box','off');
     % Set The Font
-    set(figure_axes,'fontname', font_name);
+    set(figure_axes,'fontname', Plot_Params.font_name);
 else
     bsfr_p_val = NaN;
 end

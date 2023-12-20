@@ -1,4 +1,5 @@
-function [avg_hists_spikes, max_fr_time] = EventWindow(xds, unit_name, target_dir, target_center, event)
+function [avg_hists_spikes, max_fr_time] = ...
+    EventWindow(xds, unit_name, target_dir, target_center, event)
 
 %% Find the unit of interest
 [N] = Find_Unit(xds, unit_name);

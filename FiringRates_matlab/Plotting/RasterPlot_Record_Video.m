@@ -45,8 +45,8 @@ raster_length = 2;
 % Extract the target directions & centers
 [target_dirs, target_centers] = Identify_Targets(xds);
 
-% Font specifications
-label_font_size = 20;
+% Font & plotting specifications
+[Plot_Params] = Plot_Parameters;
 
 %% Indexes for rewarded trials in all directions
 
@@ -85,7 +85,7 @@ ylims = ylim;
 % Setting the x-axis limits
 xlim([-raster_length + 1, raster_length + 1]);
 
-xlabel('Time (sec.)', 'FontSize', label_font_size)
+xlabel('Time (sec.)', 'FontSize', Plot_Params.label_font_size)
 
 % Remove the y-axis
 yticks([])

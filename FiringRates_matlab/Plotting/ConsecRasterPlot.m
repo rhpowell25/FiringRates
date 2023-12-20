@@ -15,11 +15,8 @@ disp('Consecutive Raster Plot Function:');
 % Binning information
 bin_size = Bin_Params.bin_size; % Time (sec.)
 
-% Font specifications
-label_font_size = 17;
-legend_font_size = 13;
-title_font_size = 14;
-font_name = 'Arial';
+% Font & plotting specifications
+[Plot_Params] = Plot_Parameters;
 
 % Define the window for the baseline phase
 time_before_gocue = 0.4;
@@ -260,21 +257,22 @@ end
 yticks([])
 
 % Axes Labels
-xlabel('Time (Sec.)', 'FontSize', label_font_size)
-ylabel('M1 Neurons', 'FontSize', label_font_size)
+xlabel('Time (Sec.)', 'FontSize', Plot_Params.label_font_size)
+ylabel('M1 Neurons', 'FontSize', Plot_Params.label_font_size)
 
 if isequal(heat_map, 1)
     heat_label = colorbar;
     heat_label.Ticks = [];
     heat_label.Label.String = 'Firing Rate';
-    heat_label.FontSize = legend_font_size;
+    heat_label.FontSize = Plot_Params.legend_size;
 end
 
 % Titling the top plot
 if ~strcmp(trial_num, 'All')
-    title(sprintf('First %i Succesful Trials: Neural Firing Rate', trial_num), 'FontSize', title_font_size)
+    title(sprintf('First %i Succesful Trials: Neural Firing Rate', trial_num), ...
+        'FontSize', Plot_Params.title_font_size)
 else
-    title('All Trials: Neural Firing Rate', 'FontSize', title_font_size)
+    title('All Trials: Neural Firing Rate', 'FontSize', Plot_Params.title_font_size)
 end
 
 % Only label every other tick
@@ -290,7 +288,7 @@ set(figure_axes,'TickDir','out');
 % Remove the top and right tick marks
 set(figure_axes,'box','off')
 % Set The Font
-set(figure_axes,'fontname', font_name);
+set(figure_axes,'fontname', Plot_Params.font_name);
 
 %% Plot the last number of trials (Bottom Plot)
 
@@ -348,21 +346,22 @@ end
 yticks([])
 
 % Axes Labels
-xlabel('Time (Sec.)', 'FontSize', label_font_size)
-ylabel('M1 Neurons', 'FontSize', label_font_size)
+xlabel('Time (Sec.)', 'FontSize', Plot_Params.label_font_size)
+ylabel('M1 Neurons', 'FontSize', Plot_Params.label_font_size)
 
 if isequal(heat_map, 1)
     heat_label = colorbar;
     heat_label.Ticks = [];
     heat_label.Label.String = 'Firing Rate';
-    heat_label.FontSize = legend_font_size;
+    heat_label.FontSize = Plot_Params.legend_size;
 end
 
 % Titling the top plot
 if ~strcmp(trial_num, 'All')
-    title(sprintf('Last %i Succesful Trials: Neural Firing Rate', trial_num), 'FontSize', title_font_size)
+    title(sprintf('Last %i Succesful Trials: Neural Firing Rate', trial_num), ...
+        'FontSize', Plot_Params.title_font_size)
 else
-    title('All Trials: Neural Firing Rate', 'FontSize', title_font_size)
+    title('All Trials: Neural Firing Rate', 'FontSize', Plot_Params.title_font_size)
 end
 
 % Only label every other tick
@@ -378,7 +377,7 @@ set(figure_axes,'TickDir','out');
 % Remove the top and right tick marks
 set(figure_axes,'box','off')
 % Set The Font
-set(figure_axes,'fontname', font_name);
+set(figure_axes,'fontname', Plot_Params.font_name);
 
 
 

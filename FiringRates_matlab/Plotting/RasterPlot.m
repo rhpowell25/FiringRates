@@ -1,4 +1,4 @@
-function RasterPlot(xds, unit_name, event, heat_map, Save_Figs)
+function RasterPlot(xds, unit_name, event, heat_map, Save_File)
 
 %% Find the unit of interest
 [N] = Find_Unit(xds, unit_name);
@@ -31,12 +31,8 @@ after_event = Bin_Params.after_event;
 % Extract the target directions & centers
 [target_dirs, target_centers] = Identify_Targets(xds);
 
-% Font specifications
-label_font_size = 20;
-title_font_size = 15;
-font_name = 'Arial';
-figure_width = 750;
-figure_height = 250;
+% Font & plotting specifications
+[Plot_Params] = Plot_Parameters;
 
 %% Indexes for rewarded trials in all directions
 % Counts the number of directions used
@@ -46,13 +42,13 @@ num_dir = length(target_dirs);
 for jj = 1:num_dir
 
     %% Times for rewarded trials
-    if strcmp(event, 'trial_gocue')
-        [rewarded_gocue_time] = GoCueAlignmentTimes(xds, NaN, NaN);
-        [rewarded_end_time] = TrialEndAlignmentTimes(xds, NaN, NaN);
+    if strcmp(event, 'trial_goCue')
+        [rewarded_gocue_time] = TrialAlignmentTimes(xds, NaN, NaN, event);
+        [rewarded_end_time] = TrialAlignmentTimes(xds, NaN, NaN, 'trial_end');
         [Alignment_Times] = EventAlignmentTimes(xds, NaN, NaN, event);
     else
-        [rewarded_gocue_time] = GoCueAlignmentTimes(xds, target_dirs(jj), target_centers(jj));
-        [rewarded_end_time] = TrialEndAlignmentTimes(xds, target_dirs(jj), target_centers(jj));
+        [rewarded_gocue_time] = TrialAlignmentTimes(xds, target_dirs(jj), target_centers(jj), 'trial_goCue');
+        [rewarded_end_time] = TrialAlignmentTimes(xds, target_dirs(jj), target_centers(jj), 'trial_end');
         [Alignment_Times] = EventAlignmentTimes(xds, target_dirs(jj), target_centers(jj), event);
     end
 
@@ -115,7 +111,7 @@ for jj = 1:num_dir
     %% Plotting peri-event rasters
 
     Raster_figure = figure;
-    Raster_figure.Position = [300 300 figure_width figure_height];
+    Raster_figure.Position = [300 300 Plot_Params.fig_size Plot_Params.fig_size / 2];
     hold on
 
     if isequal(heat_map, 0)
@@ -124,7 +120,7 @@ for jj = 1:num_dir
             plot(aligned_spike_timing{ii, 1} - Alignment_Times(ii), ...
                 ones(1, length(aligned_spike_timing{ii, 1}))*ii,... 
                 'Marker', '.', 'Color', 'k', 'Markersize', 3, 'Linestyle', 'none');
-            if ~contains(event, 'gocue')
+            if ~contains(event, 'goCue')
                 % Plot the go-cues as dark green dots
                 plot(-gocue_to_event(ii), ii, 'Marker', '.', 'Color', [0 0.5 0], 'Markersize', 15);
             end
@@ -155,7 +151,7 @@ for jj = 1:num_dir
     ylims = ylim;
 
     % Setting the x-axis limits
-    if contains(event, 'gocue') || contains(event, 'onset')
+    if contains(event, 'goCue') || contains(event, 'onset')
         xlim([-1, after_event]);
     elseif contains(event, 'end')
         xlim([-before_event, 1]);
@@ -163,7 +159,7 @@ for jj = 1:num_dir
         xlim([-before_event, after_event]);
     end
 
-    if contains(event, 'gocue')
+    if contains(event, 'goCue')
         % Dotted green line indicating beginning of measured window
         line([-time_before_gocue, -time_before_gocue], [ylims(1), ylims(2)], ...
             'linewidth',2,'color',[0 0.5 0],'linestyle','--');
@@ -180,7 +176,7 @@ for jj = 1:num_dir
             'linewidth',2,'color','r','linestyle','--');
     end
 
-    if ~strcmp(event, 'trial_gocue') && ~strcmp(event, 'trial_end')
+    if ~strcmp(event, 'trial_goCue') && ~strcmp(event, 'trial_end')
         % Dotted line indicating beginning of measured window
         line([max_fr_time - half_window_length, max_fr_time - half_window_length], ... 
             [ylims(1), ylims(2)], 'linewidth', 2, 'Color', window_color, 'Linestyle','--');
@@ -193,8 +189,8 @@ for jj = 1:num_dir
     yticks([])
 
     % Titling the rasters
-    if strcmp(event, 'trial_gocue')
-        raster_title = strcat(char(xds.unit_names(N)), {' '}, 'aligned to trial gocue:');
+    if strcmp(event, 'trial_goCue')
+        Fig_Title = strcat(char(xds.unit_names(N)), {' '}, 'aligned to trial gocue:');
     else
         if contains(event, 'window')
             temp_event = strrep(event, 'window_', '');
@@ -202,18 +198,18 @@ for jj = 1:num_dir
             temp_event = event;
         end
         event_title = strcat('aligned to', {' '}, strrep(temp_event, '_', {' '}), ':');
-        raster_title = strcat(char(xds.unit_names(N)), {' '}, event_title, {' '}, num2str(target_dirs(jj)), ...
+        Fig_Title = strcat(char(xds.unit_names(N)), {' '}, event_title, {' '}, num2str(target_dirs(jj)), ...
             '°, TgtCenter at', {' '}, num2str(target_centers(jj)));
     end
     if contains(xds.meta.rawFileName, 'Pre')
-        raster_title = strcat(raster_title, {' '}, '(Morning)');
+        Fig_Title = strcat(Fig_Title, {' '}, '(Morning)');
     end
     if contains(xds.meta.rawFileName, 'Post')
-        raster_title = strcat(raster_title, {' '}, '(Afternoon)');
+        Fig_Title = strcat(Fig_Title, {' '}, '(Afternoon)');
     end
-    title(raster_title, 'FontSize', title_font_size)
+    title(Fig_Title, 'FontSize', Plot_Params.title_font_size)
 
-    xlabel('Time (sec.)', 'FontSize', label_font_size)
+    xlabel('Time (sec.)', 'FontSize', Plot_Params.label_font_size)
 
     % Only label every other tick
     figure_axes = gca;
@@ -225,42 +221,18 @@ for jj = 1:num_dir
     % Remove the top and right tick marks
     set(figure_axes,'box','off')
     % Set The Font
-    set(figure_axes,'fontname', font_name);
+    set(figure_axes,'fontname', Plot_Params.font_name);
 
     % End the event after one loop if showing baseline firing rate
-    if strcmp(event, 'trial_gocue')
+    if strcmp(event, 'trial_goCue')
         return
     end
 
+    %% Save the file if selected
+    Save_Figs(Fig_Title, Save_File)
+
 end % End of target loop
 
-%% Define the save directory & save the figures
-if ~isequal(Save_Figs, 0)
-    save_dir = 'C:\Users\rhpow\Desktop\';
-    for ii = 1:length(findobj('type','figure'))
-        fig_info = get(gca,'title');
-        fig_title = get(fig_info, 'string');
-        if isempty(fig_title)
-            fig_info = sgt;
-            fig_title = get(fig_info, 'string');
-        end
-        fig_title = strrep(fig_title, ':', '');
-        fig_title = strrep(fig_title, 'vs.', 'vs');
-        fig_title = strrep(fig_title, 'mg.', 'mg');
-        fig_title = strrep(fig_title, 'kg.', 'kg');
-        fig_title = strrep(fig_title, '.', '_');
-        fig_title = strrep(fig_title, '/', '_');
-        %title '';
-        if strcmp(Save_Figs, 'All')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'png')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'pdf')
-            saveas(gcf, fullfile(save_dir, char(fig_title)), 'fig')
-        else
-            saveas(gcf, fullfile(save_dir, char(fig_title)), Save_Figs)
-        end
-        close gcf
-    end
-end
 
 
 

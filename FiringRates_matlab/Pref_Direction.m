@@ -1,4 +1,4 @@
-function [pref_dir] = EventPreferredDirection(xds, unit_name, event, tgt_mpfr)
+function [pref_dir] = Pref_Direction(xds, unit_name, event, tgt_mpfr)
 
 %% End the function if the task is Powergrasp
 if strcmp(xds.meta.task, 'multi_gadget')

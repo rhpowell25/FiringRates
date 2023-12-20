@@ -98,10 +98,8 @@ end
 
 %% Scatter plotting
 
-% Font specifications
-label_font_size = 20;
-title_font_size = 20;
-fig_size = 700;
+% Font & plotting specifications
+[Plot_Params] = Plot_Parameters;
 
 % Do you want to label the event? (1 = Yes, 0 = No)
 event_label = 1;
@@ -117,16 +115,16 @@ marker_shape = '.';
 marker_color = 0;
 
 scatter_fig = figure;
-scatter_fig.Position = [200 50 fig_size fig_size];
+scatter_fig.Position = [200 50 Plot_Params.fig_size Plot_Params.fig_size];
 hold on
 
 % Set the title
 fig_title = strcat(file_name, {' '}, '-', {' '}, unit_name);
-title(fig_title, 'FontSize', title_font_size)
+title(fig_title, 'FontSize', Plot_Params.title_font_size)
 
 % Label the axis
-xlabel('Morning Depth of Modulation (Hz)', 'FontSize', label_font_size);
-ylabel('Afternoon Depth of Modulation (Hz)', 'FontSize', label_font_size);
+xlabel('Morning Depth of Modulation (Hz)', 'FontSize', Plot_Params.label_font_size);
+ylabel('Afternoon Depth of Modulation (Hz)', 'FontSize', Plot_Params.label_font_size);
 
 for jj = 1:length(events)
     scatter(depth_morn(jj), depth_noon(jj), sz, marker_shape, 'MarkerEdgeColor', ... 

@@ -18,13 +18,9 @@ unit = xds_morn.unit_names(N);
 
 %% Some variable extraction & definitions
 
-% Font specifications
-title_font_size = 15;
-plot_line_size = 3;
-axes_font_size = 20;
+% Font & plotting specifications
+[Plot_Params] = Plot_Parameters;
 r_axes_angle = 45;
-axes_line_size = 3;
-font_name = 'Arial';
 
 %% Retrieve the movement phase firing rates
 
@@ -132,31 +128,35 @@ for kk = 1:length(unique_targets_morn)
 
     % Plot the morning baseline standard error in gold
     polarscatter(deg2rad(morn_target_dirs_idx(:,kk)), pos_err_mp_morn(:,kk), ... 
-        sz, 'MarkerEdgeColor', [0.9290, 0.6940, 0.1250], 'Marker', errmrk, 'LineWidth', plot_line_size)
+        sz, 'MarkerEdgeColor', [0.9290, 0.6940, 0.1250], 'Marker', errmrk, ...
+        'LineWidth', Plot_Params.mean_line_width)
     hold on
     polarscatter(deg2rad(morn_target_dirs_idx(:,kk)), neg_err_mp_morn(:,kk), ... 
-        sz, 'MarkerEdgeColor', [0.9290, 0.6940, 0.1250], 'Marker', errmrk, 'LineWidth', plot_line_size)
+        sz, 'MarkerEdgeColor', [0.9290, 0.6940, 0.1250], 'Marker', errmrk, ...
+        'LineWidth', Plot_Params.mean_line_width)
     % Plot the afternoon baseline standard error in purple
     polarscatter(deg2rad(noon_target_dirs_idx(:,kk)), pos_err_mp_noon(:,kk), ... 
-        sz, 'MarkerEdgeColor', [.5 0 .5], 'Marker', errmrk, 'LineWidth', plot_line_size)
+        sz, 'MarkerEdgeColor', [.5 0 .5], 'Marker', errmrk, ...
+        'LineWidth', Plot_Params.mean_line_width)
     polarscatter(deg2rad(noon_target_dirs_idx(:,kk)), neg_err_mp_noon(:,kk), ... 
-        sz, 'MarkerEdgeColor', [.5 0 .5], 'Marker', errmrk, 'LineWidth', plot_line_size)
+        sz, 'MarkerEdgeColor', [.5 0 .5], 'Marker', errmrk, ...
+        'LineWidth', Plot_Params.mean_line_width)
 
     % Connect the error bars with lines with a marker in the center
     if length(unique(target_dirs_morn)) == 2 && ~isequal(unique(abs(target_dirs_morn)), 90)
         % Plot the morning baseline firing rate in gold
         polarplot([0,0], [pos_err_mp_morn(1,kk); neg_err_mp_morn(1,kk)], ...
-            'LineWidth', plot_line_size, 'color', [0.9290, 0.6940, 0.1250]);
+            'LineWidth', Plot_Params.mean_line_width, 'color', [0.9290, 0.6940, 0.1250]);
         polarscatter(0, morn_mp_fr_idx(1,kk), sz, [0.9290, 0.6940, 0.1250], 'Marker','.')
         polarplot([pi,pi], [pos_err_mp_morn(2,kk); neg_err_mp_morn(2,kk)], ...
-            'LineWidth', plot_line_size, 'color', [0.9290, 0.6940, 0.1250]);
+            'LineWidth', Plot_Params.mean_line_width, 'color', [0.9290, 0.6940, 0.1250]);
         polarscatter(pi, morn_mp_fr_idx(2,kk), sz, [0.9290, 0.6940, 0.1250], 'Marker','.')
         % Plot the afternoon baseline firing rate in purple
         polarplot([0,0], [pos_err_mp_noon(1,kk); neg_err_mp_noon(1,kk)], ...
-            'LineWidth', plot_line_size, 'color', [.5 0 .5]);
+            'LineWidth', Plot_Params.mean_line_width, 'color', [.5 0 .5]);
         polarscatter(0, noon_mp_fr_idx(1,kk), sz, [.5 0 .5], 'Marker','.')
         polarplot([pi,pi], [pos_err_mp_noon(2,kk); neg_err_mp_noon(2,kk)], ...
-            'LineWidth', plot_line_size, 'color', [.5 0 .5]);
+            'LineWidth', Plot_Params.mean_line_width, 'color', [.5 0 .5]);
         polarscatter(pi, noon_mp_fr_idx(2,kk), sz, [.5 0 .5], 'Marker','.')  
     end
 
@@ -164,10 +164,10 @@ for kk = 1:length(unique_targets_morn)
         % Plot the morning baseline firing rate in gold
         polarplot([deg2rad(morn_target_dirs_idx(1,kk)),deg2rad(morn_target_dirs_idx(1,kk))], ... 
             [pos_err_mp_morn(1,kk); neg_err_mp_morn(1,kk)], ...
-            'LineWidth', plot_line_size, 'color', [0.9290, 0.6940, 0.1250]);
+            'LineWidth', Plot_Params.mean_line_width, 'color', [0.9290, 0.6940, 0.1250]);
         polarplot([deg2rad(morn_target_dirs_idx(2,kk)),deg2rad(morn_target_dirs_idx(2,kk))], ... 
             [pos_err_mp_morn(2,kk); neg_err_mp_morn(2,kk)], ...
-            'LineWidth', plot_line_size, 'color', [0.9290, 0.6940, 0.1250]);
+            'LineWidth', Plot_Params.mean_line_width, 'color', [0.9290, 0.6940, 0.1250]);
         polarscatter(deg2rad(morn_target_dirs_idx(1,kk)), morn_mp_fr_idx(1,kk), ... 
             sz, [0.9290, 0.6940, 0.1250], 'Marker','.')
         polarscatter(deg2rad(morn_target_dirs_idx(2,kk)), morn_mp_fr_idx(2,kk), ... 
@@ -175,10 +175,10 @@ for kk = 1:length(unique_targets_morn)
         % Plot the afternoon baseline firing rate in purple
         polarplot([deg2rad(noon_target_dirs_idx(1,kk)),deg2rad(noon_target_dirs_idx(1,kk))], ... 
             [pos_err_mp_noon(1,kk); neg_err_mp_noon(1,kk)], ...
-            'LineWidth', plot_line_size, 'color', [.5 0 .5]);
+            'LineWidth', Plot_Params.mean_line_width, 'color', [.5 0 .5]);
         polarplot([deg2rad(noon_target_dirs_idx(2,kk)),deg2rad(noon_target_dirs_idx(2,kk))], ... 
             [pos_err_mp_noon(2,kk); neg_err_mp_noon(2,kk)], ...
-            'LineWidth', plot_line_size, 'color', [.5 0 .5]);
+            'LineWidth', Plot_Params.mean_line_width, 'color', [.5 0 .5]);
         polarscatter(deg2rad(noon_target_dirs_idx(1,kk)), noon_mp_fr_idx(1,kk), ... 
             sz, [.5 0 .5], 'Marker','.')
         polarscatter(deg2rad(noon_target_dirs_idx(2,kk)), noon_mp_fr_idx(2,kk), ... 
@@ -189,13 +189,13 @@ for kk = 1:length(unique_targets_morn)
         % Plot the morning baseline firing rate in gold
         polarplot([deg2rad(morn_target_dirs_idx(1,kk)),deg2rad(morn_target_dirs_idx(1,kk))], ... 
             [pos_err_mp_morn(1,kk); neg_err_mp_morn(1,kk)], ...
-            'LineWidth', plot_line_size, 'color', [0.9290, 0.6940, 0.1250]);
+            'LineWidth', Plot_Params.mean_line_width, 'color', [0.9290, 0.6940, 0.1250]);
         polarscatter(deg2rad(morn_target_dirs_idx(1,kk)), morn_mp_fr_idx(1,kk), ... 
             sz, [0.9290, 0.6940, 0.1250], 'Marker','.')
         % Plot the afternoon baseline firing rate in purple
         polarplot([deg2rad(noon_target_dirs_idx(1,kk)),deg2rad(noon_target_dirs_idx(1,kk))], ... 
             [pos_err_mp_noon(1,kk); neg_err_mp_noon(1,kk)], ...
-            'LineWidth', plot_line_size, 'color', [.5 0 .5]);
+            'LineWidth', Plot_Params.mean_line_width, 'color', [.5 0 .5]);
         polarscatter(deg2rad(noon_target_dirs_idx(1,kk)), noon_mp_fr_idx(1,kk), ... 
             sz, [.5 0 .5], 'Marker','.')
     end
@@ -204,10 +204,10 @@ for kk = 1:length(unique_targets_morn)
     if length(unique(target_dirs_morn)) > 2
         % Plot the morning baseline firing rate in gold
         polarplot((morn_target_dirs_idx(:,kk)*(pi/180)), morn_mp_fr_idx(:,kk), ...
-            'LineWidth', plot_line_size, 'Color', [0.9290, 0.6940, 0.1250])
+            'LineWidth', Plot_Params.mean_line_width, 'Color', [0.9290, 0.6940, 0.1250])
         % Plot the afternoon baseline firing rate in purple
         polarplot((noon_target_dirs_idx(:,kk)*(pi/180)), noon_mp_fr_idx(:,kk), ...
-            'LineWidth', plot_line_size, 'Color', [.5 0 .5])
+            'LineWidth', Plot_Params.mean_line_width, 'Color', [.5 0 .5])
     end
     
     %Set the axis limit
@@ -229,11 +229,11 @@ for kk = 1:length(unique_targets_morn)
     % Set the title
     if length(unique_targets_morn) == 1
         title(sprintf('Morning vs. Afternoon, %s', ...
-            char(unit)), 'FontSize', title_font_size)
+            char(unit)), 'FontSize', Plot_Params.title_font_size)
     end
     if length(unique_targets_morn) > 1
         title(sprintf('Morning vs. Afternoon, %s, TgtCenter: %0.1f', ...
-            char(unit), unique_targets_morn(kk)), 'FontSize', title_font_size)
+            char(unit), unique_targets_morn(kk)), 'FontSize', Plot_Params.title_font_size)
     end
 
     % Only label every other tick
@@ -242,13 +242,13 @@ for kk = 1:length(unique_targets_morn)
     figure_axes.FontWeight = 'Bold';
     figure_axes.RColor = 'k';
     figure_axes.ThetaColor = 'k';
-    figure_axes.LineWidth = axes_line_size;
-    figure_axes.FontSize = axes_font_size;
+    figure_axes.LineWidth = Plot_Params.axes_line_width;
+    figure_axes.FontSize = Plot_Params.axes_font_size;
     r_labels = string(figure_axes.RAxis.TickLabels);
     r_labels(2:2:end) = NaN;
     figure_axes.RAxis.TickLabels = r_labels;
     % Set The Font
-    set(figure_axes,'FontName', font_name);
+    set(figure_axes,'FontName', Plot_Params.font_name);
 
 end
 
