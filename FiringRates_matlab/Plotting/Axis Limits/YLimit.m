@@ -10,14 +10,16 @@ disp('Y-Limit Function:');
 %% Begin the loop through all directions
 avg_hists_spikes_morn = struct([]);
 for jj = 1:length(target_dirs_morn)
-    [avg_hists_spikes_morn{jj}, ~ ]= ...
-        EventWindow(xds_morn, unit_name, target_dirs_morn(jj), target_centers_morn(jj), event);
+    [Alignment_Times] = EventAlignmentTimes(xds_morn, ...
+        target_dirs_morn(jj), target_centers_morn(jj), event);
+    [avg_hists_spikes_morn{jj}] = Avg_Hist_Spikes(xds_morn, unit_name, Alignment_Times);
 end
 
 avg_hists_spikes_noon = struct([]);
 for jj = 1:length(target_dirs_noon)
-    [avg_hists_spikes_noon{jj}, ~] = ...
-        EventWindow(xds_noon, unit_name, target_dirs_noon(jj), target_centers_noon(jj), event);
+    [Alignment_Times] = EventAlignmentTimes(xds_noon, ...
+        target_dirs_noon(jj), target_centers_noon(jj), event);
+    [avg_hists_spikes_noon{jj}] = Avg_Hist_Spikes(xds_noon, unit_name, Alignment_Times);
 end
 
 %% Finding the maximum of spikes

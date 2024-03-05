@@ -1,4 +1,4 @@
-function [pref_dir] = PreferredDirection_Morn_v_Noon(xds_morn, xds_noon, unit_name, event, tgt_mpfr)
+function [pref_dir] = Pref_Direction_Morn_v_Noon(xds_morn, xds_noon, unit_name, event, tgt_mpfr)
 
 %% End the function if the task is Powergrasp
 if strcmp(xds_morn.meta.task, 'multi_gadget')

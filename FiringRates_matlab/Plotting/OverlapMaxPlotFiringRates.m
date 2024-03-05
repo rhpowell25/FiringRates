@@ -23,14 +23,16 @@ unit = xds_morn.unit_names(N);
 %% Begin the loop through all directions
 avg_hists_spikes_morn = struct([]);
 for jj = 1:length(target_dirs_morn)
-    [avg_hists_spikes_morn{jj}, ~] = ...
-        EventWindow(xds_morn, unit_name, target_dirs_morn(jj), target_centers_morn(jj), event);
+    [Alignment_Times] = EventAlignmentTimes(xds_morn, ...
+        target_dirs_morn(jj), target_centers_morn(jj), event);
+    [avg_hists_spikes_morn{jj}] = Avg_Hist_Spikes(xds_morn, unit_name, Alignment_Times);
 end
 
 avg_hists_spikes_noon = struct([]);
 for jj = 1:length(target_dirs_noon)
-    [avg_hists_spikes_noon{jj}, ~] = ...
-        EventWindow(xds_noon, unit_name, target_dirs_noon(jj), target_centers_noon(jj), event);
+    [Alignment_Times] = EventAlignmentTimes(xds_noon, ...
+        target_dirs_noon(jj), target_centers_noon(jj), event);
+    [avg_hists_spikes_noon{jj}] = Avg_Hist_Spikes(xds_noon, unit_name, Alignment_Times);
 end
 
 %% Basic Settings, some variable extractions, & definitions
@@ -54,7 +56,7 @@ elseif contains(event, 'end')
 end
 
 % Font & plotting specifications
-[Plot_Params] = Plot_Parameters;
+[Plot_Params] = Plot_Specs;
 
 %% X-axis
 spike_time = (-before_event:bin_size:after_event);
@@ -99,7 +101,8 @@ for ii = 1:length(avg_hists_spikes_morn)
     end
     if length(unique(target_centers_noon)) > 1
         Fig_Title = strcat('Mean firing rate of', {' '}, char(unit), ':', ...
-            {' '}, target_dirs_morn(ii), '°, target center at', {' '}, target_centers_noon(ii));
+            {' '}, string(target_dirs_morn(ii)), '°, target center at', ...
+            {' '}, string(target_centers_noon(ii)));
     end
     title(Fig_Title, 'FontSize', Plot_Params.title_font_size)
     
@@ -154,7 +157,7 @@ for ii = 1:length(avg_hists_spikes_morn)
 
     % Only label every other tick
     figure_axes = gca;
-    figure_axes.LineWidth = Plot_Params.axes_line_width;
+    figure_axes.LineWidth = Plot_Params.axis_line_width;
     x_labels = string(figure_axes.XAxis.TickLabels);
     y_labels = string(figure_axes.YAxis.TickLabels);
     x_labels(2:2:end) = NaN;

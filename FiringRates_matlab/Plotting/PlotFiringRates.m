@@ -18,8 +18,9 @@ unit = xds.unit_names(N);
 avg_hists_spikes = struct([]);
 max_fr_time = zeros(length(target_dirs),1);
 for jj = 1:length(target_dirs)
-    [avg_hists_spikes{jj}, max_fr_time(jj)] = ...
-        EventWindow(xds, unit_name, target_dirs(jj), target_centers(jj), event);
+    [Alignment_Times] = EventAlignmentTimes(xds, ...
+        target_dirs(jj), target_centers(jj), event);
+    [avg_hists_spikes{jj}] = Avg_Hist_Spikes(xds, unit_name, Alignment_Times);
 end
 
 %% Basic Settings, some variable extractions, & definitions
